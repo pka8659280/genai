@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <title>Knowledge Group Type Management</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.css" rel="stylesheet" />
+</head>
+<body>
+
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2><i class="bi bi-journal-text"></i> Knowledge Group Type Management</h2>
+    <div>
+      <button class="btn btn-danger me-2" id="btnDeleteSelected" disabled>
+        <i class="bi bi-trash"></i> Delete Selected
+      </button>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#knowledgeGroupTypeModal" id="btnAddNew">
+        <i class="bi bi-plus-circle"></i> Add New
+      </button>
+    </div>
+  </div>
+
+  <table
+    id="knowledgeGroupTypeTable"
+    class="table table-bordered table-hover"
+    data-toggle="table"
+    data-url="/api/knowledgeGroupType"
+    data-pagination="true"
+    data-search="true"
+    data-show-refresh="true"
+    data-show-columns="true"
+    data-side-pagination="client"
+    data-click-to-select="false"
+    data-maintain-selected="true"
+  >
+    <thead class="table-dark">
+      <tr>
+        <th data-field="state" data-checkbox="true"></th>
+        <th data-field="id" data-sortable="true">ID</th>
+        <th data-field="groupName" data-sortable="true">Group Name</th>
+        <th data-field="description" data-sortable="true">Description</th>
+        <th data-field="createdDateTime" data-sortable="true">Created At</th>
+        <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
+      </tr>
+    </thead>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="knowledgeGroupTypeModal" tabindex="-1" aria-labelledby="knowledgeGroupTypeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <form id="knowledgeGroupTypeForm" class="needs-validation" novalidate>
+      <!-- hidden id for form submission -->
+      <input type="hidden" id="knowledgeGroupTypeId" />
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="knowledgeGroupTypeModalLabel">Add Knowledge Group Type</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <!-- Show ID only when editing/viewing -->
+          <div class="mb-3" id="idFormGroup" style="display:none;">
+            <label for="knowledgeGroupTypeIdDisplay" class="form-label">ID</label>
+            <input type="text" class="form-control" id="knowledgeGroupTypeIdDisplay" readonly />
+          </div>
+
+          <div class="mb-3">
+            <label for="groupName" class="form-label">Group Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="groupName" required />
+            <div class="invalid-feedback">Group Name is required.</div>
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" rows="3"></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="modalEditBtn">Edit</button>
+          <button type="submit" class="btn btn-primary d-none" id="modalSaveBtn">
+            <i class="bi bi-save"></i> Save
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
+
+<script>
+(() => {
+  const $table = $('#knowledgeGroupTypeTable');
+  const $btnDeleteSelected = $('#btnDeleteSelected');
+  const modalEl = document.getElementById('knowledgeGroupTypeModal');
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+  const form = document.getElementById('knowledgeGroupTypeForm');
+  const modalEditBtn = document.getElementById('modalEditBtn');
+  const modalSaveBtn = document.getElementById('modalSaveBtn');
+
+  // Cache inputs
+  const inputs = {
+    knowledgeGroupTypeId: document.getElementById('knowledgeGroupTypeId'), // hidden
+    knowledgeGroupTypeIdDisplay: document.getElementById('knowledgeGroupTypeIdDisplay'), // readonly visible
+    groupName: document.getElementById('groupName'),
+    description: document.getElementById('description'),
+  };
+
+  const editableFields = ['groupName', 'description'];
+
+  const apiBase = '/api/knowledgeGroupType';
+
+  // Utility to format datetime nicely
+  const formatDateTime = val => val ? new Date(val).toLocaleString() : '';
+
+  // Ajax helper
+  const ajax = (url, method, data) =>
+    $.ajax({ url, method, contentType: 'application/json', data: JSON.stringify(data) });
+
+  // Set form data from an object
+  const setFormData = data => {
+    inputs.knowledgeGroupTypeId.value = data.id || '';
+    inputs.knowledgeGroupTypeIdDisplay.value = data.id || '';
+    inputs.groupName.value = data.groupName || '';
+    inputs.description.value = data.description || '';
+  };
+
+  // Collect form data for submit
+  const getFormData = () => {
+    const data = {};
+    editableFields.forEach(f => data[f] = inputs[f].value);
+    if (inputs.knowledgeGroupTypeId.value) {
+      data.id = inputs.knowledgeGroupTypeId.value;
+    }
+    data.createdByUserId = 1; // dummy
+    return data;
+  };
+
+  // Make form editable or readonly
+  const setFormEditable = editable => {
+    editableFields.forEach(f => {
+      if (editable) {
+        inputs[f].removeAttribute('readonly');
+        inputs[f].removeAttribute('disabled');
+      } else {
+        inputs[f].setAttribute('readonly', 'readonly');
+      }
+    });
+  };
+
+  // Reset form and validation
+  const resetForm = () => {
+    form.reset();
+    form.classList.remove('was-validated');
+    setFormData({});
+  };
+
+  // Refresh table data
+  const refreshTable = () => $table.bootstrapTable('refresh');
+
+  // Format datetime after data load
+  $table.on('post-body.bs.table', () => {
+    $table.find('tbody tr').each((_, tr) => {
+      const $cells = $(tr).find('td');
+      $cells.eq(4).text(formatDateTime($cells.eq(4).text()));
+      $cells.eq(5).text(formatDateTime($cells.eq(5).text()));
+    });
+  });
+
+  // Enable/disable Delete Selected button based on selection
+  $table.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', () => {
+    const selected = $table.bootstrapTable('getSelections');
+    $btnDeleteSelected.prop('disabled', selected.length === 0);
+  });
+
+  // When a row is clicked, open modal to view
+  $table.on('click-row.bs.table', (_, row, __, field) => {
+    if(field === 'state') return; // ignore checkbox clicks
+
+    setFormData(row);
+    document.getElementById('knowledgeGroupTypeModalLabel').textContent = 'View Knowledge Group Type';
+    setFormEditable(false);
+
+    modalEditBtn.classList.remove('d-none');
+    modalSaveBtn.classList.add('d-none');
+
+    document.getElementById('idFormGroup').style.display = 'block';
+
+    modal.show();
+  });
+
+  // Add New button: reset form, editable, hide ID field
+  $('#btnAddNew').on('click', () => {
+    resetForm();
+    document.getElementById('knowledgeGroupTypeModalLabel').textContent = 'Add Knowledge Group Type';
+    setFormEditable(true);
+
+    modalEditBtn.classList.add('d-none');
+    modalSaveBtn.classList.remove('d-none');
+
+    document.getElementById('idFormGroup').style.display = 'none';
+  });
+
+  // Edit button in modal: enable editing, show save button
+  modalEditBtn.addEventListener('click', () => {
+    document.getElementById('knowledgeGroupTypeModalLabel').textContent = 'Edit Knowledge Group Type';
+    setFormEditable(true);
+
+    modalEditBtn.classList.add('d-none');
+    modalSaveBtn.classList.remove('d-none');
+
+    document.getElementById('idFormGroup').style.display = 'block';
+  });
+
+  // Form submission (Add or Update)
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    const id = inputs.knowledgeGroupTypeId.value;
+    const url = id ? `${apiBase}/${id}` : apiBase;
+    const method = id ? 'PUT' : 'POST';
+
+    ajax(url, method, getFormData())
+      .done(() => {
+        alert(`Knowledge Group Type ${id ? 'updated' : 'added'} successfully!`);
+        modal.hide();
+        resetForm();
+        refreshTable();
+      })
+      .fail(() => alert('Failed to save knowledge group type. Please try again.'));
+  });
+
+  // ** Updated Delete Selected Handler **
+  $btnDeleteSelected.on('click', () => {
+    const selected = $table.bootstrapTable('getSelections');
+    if (selected.length === 0) return;
+
+    if (!confirm(`Are you sure you want to delete ${selected.length} selected knowledge group type(s)?`)) return;
+
+    const deletePromises = selected.map(row => 
+      $.ajax({
+        url: `${apiBase}/${row.id}`,
+        method: 'DELETE',
+      })
+    );
+
+    Promise.all(deletePromises)
+      .then(() => {
+        alert('Selected knowledge group types deleted successfully.');
+        refreshTable();
+        $btnDeleteSelected.prop('disabled', true);
+      })
+      .catch(() => {
+        alert('Failed to delete some knowledge group types.');
+        refreshTable();
+        $btnDeleteSelected.prop('disabled', true);
+      });
+  });
+
+})();
+</script>
+</body>
+</html>

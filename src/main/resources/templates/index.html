@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bootstrap Fullscreen Form and Result</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
+    body {
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      font-size: 1rem; /* base font size */
+    }
+    #userRequestInput, #systemInstruction, #knowledge {
+      max-height: 25vh;   /* max height relative to viewport */
+      resize: none;
+      white-space: pre; /* preserve newlines, no wrap */
+    }
+    #resultArea {
+      resize: none;
+      white-space: pre;
+      background-color: white;
+    }
+    .form-container, .result-container {
+      background-color: white;
+      border-radius: 0.375rem;
+      box-shadow: 0 0.125rem 0.25rem rgb(0 0 0 / 0.075);
+      padding: 1rem;  /* Bootstrap default padding */
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .container-flex {
+      flex: 1 0 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      padding-top: 2vh;
+      padding-bottom: 2vh;
+    }
+  </style>
+</head>
+<body>
+  <div class="container container-flex">
+    <h1 class="mb-4 text-center">GEN AI</h1>
+
+    <div class="row flex-grow-1 g-4" style="height: 80vh;">
+      <!-- Left side: Form -->
+      <div class="col-12 col-md-6 d-flex">
+        <div class="form-container flex-fill">
+          <form id="myForm" class="d-flex flex-column h-100">
+            <div class="mb-3">
+              <label for="systemInstruction" class="form-label fw-semibold mb-2">System Instruction</label>
+              <textarea
+                class="form-control overflow-auto"
+                id="systemInstruction"
+                name="systemInstruction"
+                placeholder="Enter system instruction"
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="knowledge" class="form-label fw-semibold mb-2">Knowledge</label>
+              <textarea
+                class="form-control overflow-auto"
+                id="knowledge"
+                name="knowledge"
+                placeholder="Enter knowledge"
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="mb-3 flex-grow-1 d-flex flex-column">
+              <label for="userRequestInput" class="form-label fw-semibold mb-2">User Request</label>
+              <textarea
+                class="form-control overflow-auto flex-grow-1"
+                id="userRequestInput"
+                name="userRequest"
+                placeholder="Enter your request"
+                rows="1"
+              ></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary mt-auto w-100">Submit</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right side: Result -->
+      <div class="col-12 col-md-6 d-flex">
+        <div class="result-container flex-fill">
+          <label for="resultArea" class="form-label fw-semibold mb-2">Result</label>
+          <textarea
+            id="resultArea"
+            class="form-control overflow-auto flex-grow-1"
+            readonly
+          ></textarea>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // Auto resize for userRequestInput textarea
+    const textarea = document.getElementById('userRequestInput');
+
+    function autoResize() {
+      textarea.style.height = 'auto';
+      const maxHeight = window.innerHeight * 0.25; // 25vh
+      if (textarea.scrollHeight <= maxHeight) {
+        textarea.style.overflowY = 'hidden';
+        textarea.style.height = textarea.scrollHeight + 'px';
+      } else {
+        textarea.style.overflowY = 'auto';
+        textarea.style.height = maxHeight + 'px';
+      }
+    }
+    textarea.addEventListener('input', autoResize);
+    window.addEventListener('load', autoResize);
+    window.addEventListener('resize', autoResize);
+
+    // POST job and poll until completion
+    async function postJobAndFetchResult(jobData) {
+      const loadingText = "Loading...";
+      const resultArea = document.getElementById("resultArea");
+      resultArea.value = loadingText;
+
+      try {
+        // 1. POST the job
+        const postResponse = await fetch("http://127.0.0.1:8081/addJob", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(jobData),
+        });
+
+        if (!postResponse.ok) {
+          throw new Error(`POST failed: ${postResponse.statusText}`);
+        }
+
+        const postResult = await postResponse.json();
+        const jobUid = postResult.job_uid;
+
+        // 2. Poll for completion
+        let completed = false;
+        while (!completed) {
+          // Wait 1 second before polling again
+          await new Promise((r) => setTimeout(r, 1000));
+
+          // Fetch job status
+          const statusResponse = await fetch(`http://127.0.0.1:8081/jobs/${jobUid}`);
+
+          if (!statusResponse.ok) {
+            throw new Error(`GET failed: ${statusResponse.statusText}`);
+          }
+
+          const jobStatus = await statusResponse.json();
+
+          if (jobStatus.status === "COMPLETED") {
+            completed = true;
+            resultArea.value = jobStatus.result || "No result available.";
+          } else if (jobStatus.status === "FAILED" || jobStatus.error) {
+            completed = true;
+            resultArea.value = `Job failed: ${jobStatus.error || "Unknown error"}`;
+          } else {
+            // Still processing
+            resultArea.value = loadingText;
+          }
+        }
+      } catch (err) {
+        resultArea.value = `Error: ${err.message}`;
+      }
+    }
+
+    // Hook form submit
+    document.getElementById('myForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const systemInstruction = document.getElementById('systemInstruction').value || "";
+      const knowledge = document.getElementById('knowledge').value || "";
+      const userRequest = document.getElementById('userRequestInput').value || "";
+
+      const fullSystemInstruction = systemInstruction + "\n" + knowledge;
+
+      const jobData = {
+        created_by_user_uid: "dummy-user-uid",
+        job_type: "dummy-job-type",
+        system_instruction: fullSystemInstruction,
+        conversation_history: "",
+        user_message: userRequest,
+      };
+
+      postJobAndFetchResult(jobData);
+    });
+  </script>
+</body>
+</html>
