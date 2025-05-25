@@ -17,11 +17,12 @@ public class KnowledgeServices {
     private KnowledgeRepository repository;
 
     public Knowledge saveKnowledge(Knowledge knowledge) {
+        knowledge.setDeleted(false); // Always ensure it's not marked deleted on save
         return repository.save(knowledge);
     }
 
     public List<Knowledge> getAllKnowledges() {
-        return repository.findAll();
+        return repository.findByDeletedFalse(); // <-- Filter out deleted ones
     }
 
     public Knowledge updateKnowledge(String id, Knowledge knowledge) {
@@ -40,6 +41,10 @@ public class KnowledgeServices {
     }
 
     public void deleteKnowledge(String id) {
-        repository.deleteById(id);
+        Optional<Knowledge> knowledge = repository.findById(id);
+        knowledge.ifPresent(k -> {
+            k.setDeleted(true); // <-- Soft delete here
+            repository.save(k);
+        });
     }
 }
