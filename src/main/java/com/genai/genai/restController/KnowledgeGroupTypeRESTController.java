@@ -21,16 +21,16 @@ public class KnowledgeGroupTypeRESTController {
 
     @GetMapping
     public List<KnowledgeGroupType> getAllKnowledgeGroupTypes() {
-        return service.getAllKnowledgeGroupTypes(); // Return only non-deleted entries
+        return service.getAllKnowledgeGroupTypes();
     }
 
     @PutMapping("/{id}")
-    public KnowledgeGroupType updateKnowledgeGroupType(@PathVariable Long id, @RequestBody KnowledgeGroupType knowledgeGroupType) {
+    public KnowledgeGroupType updateKnowledgeGroupType(@PathVariable String id, @RequestBody KnowledgeGroupType knowledgeGroupType) {
         return service.updateKnowledgeGroupType(id, knowledgeGroupType);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteKnowledgeGroupType(@PathVariable Long id) {
+    public void deleteKnowledgeGroupType(@PathVariable String id) {
         service.deleteKnowledgeGroupType(id);
     }
 }

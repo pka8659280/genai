@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface KnowledgeGroupTypeRepository extends JpaRepository<KnowledgeGroupType, Long> {
+public interface KnowledgeGroupTypeRepository extends JpaRepository<KnowledgeGroupType, String> {
 
     // Fetch all KnowledgeGroupType entries that are not soft-deleted
     List<KnowledgeGroupType> findByDeletedFalse();

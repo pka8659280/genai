@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "knowledge_group_type")
@@ -15,8 +16,8 @@ import java.time.LocalDateTime;
 public class KnowledgeGroupType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(length = 36, nullable = false, updatable = false)
+    private String id;
 
     @Column(name = "group_name", length = 100, nullable = false)
     private String groupName;
@@ -41,6 +42,9 @@ public class KnowledgeGroupType {
 
     @PrePersist
     protected void onCreate() {
+        if (id == null) {
+            id = UUID.randomUUID().toString();
+        }
         if (deleted == null) {
             deleted = false;
         }

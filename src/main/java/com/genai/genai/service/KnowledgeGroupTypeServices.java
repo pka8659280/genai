@@ -16,15 +16,15 @@ public class KnowledgeGroupTypeServices {
     private KnowledgeGroupTypeRepository repository;
 
     public KnowledgeGroupType saveKnowledgeGroupType(KnowledgeGroupType knowledgeGroupType) {
-        knowledgeGroupType.setDeleted(false);
+        knowledgeGroupType.setDeleted(false); // Ensure soft-delete is false on creation
         return repository.save(knowledgeGroupType);
     }
 
     public List<KnowledgeGroupType> getAllKnowledgeGroupTypes() {
-        return repository.findByDeletedFalse();
+        return repository.findByDeletedFalse(); // Return only active (not deleted)
     }
 
-    public KnowledgeGroupType updateKnowledgeGroupType(Long id, KnowledgeGroupType knowledgeGroupType) {
+    public KnowledgeGroupType updateKnowledgeGroupType(String id, KnowledgeGroupType knowledgeGroupType) {
         Optional<KnowledgeGroupType> existingOpt = repository.findById(id);
         if (existingOpt.isPresent()) {
             KnowledgeGroupType existing = existingOpt.get();
@@ -46,7 +46,7 @@ public class KnowledgeGroupTypeServices {
         }
     }
 
-    public void deleteKnowledgeGroupType(Long id) {
+    public void deleteKnowledgeGroupType(String id) {
         Optional<KnowledgeGroupType> optional = repository.findById(id);
         if (optional.isPresent()) {
             KnowledgeGroupType entity = optional.get();

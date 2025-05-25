@@ -1,0 +1,154 @@
+// static/js/crudModalTable.js
+export function initCrudModalTable(config) {
+  const {
+    tableId,
+    modalId,
+    formId,
+    apiBase,
+    fields,
+    idField,
+    displayIdField,
+    addButtonId,
+    deleteButtonId,
+    modalLabelId,
+    editButtonId,
+    saveButtonId,
+  } = config;
+
+  const $table = $(`#${tableId}`);
+  const modal = bootstrap.Modal.getOrCreateInstance(document.getElementById(modalId));
+  const form = document.getElementById(formId);
+  const $btnDeleteSelected = $(`#${deleteButtonId}`);
+
+  const fieldInputs = fields.reduce((acc, key) => {
+    acc[key] = document.getElementById(key);
+    return acc;
+  }, {
+    [idField]: document.getElementById(idField),
+    ...(displayIdField ? { [displayIdField]: document.getElementById(displayIdField) } : {}),
+  });
+
+  const ajax = (url, method, data) =>
+    $.ajax({ url, method, contentType: 'application/json', data: JSON.stringify(data) });
+
+  const formatDateTime = val => val ? new Date(val).toLocaleString() : '';
+
+  const setFormData = data => {
+    fieldInputs[idField].value = data.id || '';
+    if (displayIdField) {
+      const displayEl = document.getElementById('idFormGroup');
+      fieldInputs[displayIdField].value = data.id || '';
+      displayEl.style.display = data.id ? 'block' : 'none';
+    }
+    fields.forEach(f => fieldInputs[f].value = data[f] || '');
+  };
+
+  const getFormData = () => {
+    const data = { createdByUserId: 1 }; // can be replaced with session user if needed
+    fields.forEach(f => data[f] = fieldInputs[f].value);
+    return data;
+  };
+
+  const setEditable = editable => {
+    fields.forEach(f => {
+      if (editable) {
+        fieldInputs[f].removeAttribute('readonly');
+      } else {
+        fieldInputs[f].setAttribute('readonly', 'readonly');
+      }
+    });
+  };
+
+  const resetForm = () => {
+    form.reset();
+    setFormData({});
+    form.classList.remove('was-validated');
+  };
+
+  const refreshTable = () => $table.bootstrapTable('refresh');
+
+  const switchModalMode = (mode) => {
+    const label = document.getElementById(modalLabelId);
+    const editBtn = document.getElementById(editButtonId);
+    const saveBtn = document.getElementById(saveButtonId);
+
+    if (mode === 'view') {
+      setEditable(false);
+      label.textContent = 'View Record';
+      editBtn.classList.remove('d-none');
+      saveBtn.classList.add('d-none');
+    } else if (mode === 'edit') {
+      setEditable(true);
+      label.textContent = 'Edit Record';
+      editBtn.classList.add('d-none');
+      saveBtn.classList.remove('d-none');
+    } else if (mode === 'add') {
+      resetForm();
+      setEditable(true);
+      label.textContent = 'Add New Record';
+      editBtn.classList.add('d-none');
+      saveBtn.classList.remove('d-none');
+    }
+  };
+
+  // Events
+  $table.on('post-body.bs.table', () => {
+    $table.find('tbody tr').each((_, tr) => {
+      const $cells = $(tr).find('td');
+      $cells.each((idx, cell) => {
+        const colText = $(cell).text();
+        if (colText && colText.match(/^\d{4}-\d{2}-\d{2}/)) {
+          $(cell).text(formatDateTime(colText));
+        }
+      });
+    });
+  });
+
+  $table.on('check.bs.table uncheck.bs.table check-all.bs.table uncheck-all.bs.table', () => {
+    $btnDeleteSelected.prop('disabled', !$table.bootstrapTable('getSelections').length);
+  });
+
+  $table.on('click-row.bs.table', (_, row, __, field) => {
+    if (field === 'state') return;
+    setFormData(row);
+    switchModalMode('view');
+    modal.show();
+  });
+
+  document.getElementById(addButtonId).addEventListener('click', () => switchModalMode('add'));
+  document.getElementById(editButtonId).addEventListener('click', () => switchModalMode('edit'));
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!form.checkValidity()) {
+      form.classList.add('was-validated');
+      return;
+    }
+
+    const id = fieldInputs[idField].value;
+    const url = id ? `${apiBase}/${id}` : apiBase;
+    const method = id ? 'PUT' : 'POST';
+
+    ajax(url, method, getFormData())
+      .done(() => {
+        alert(`Record ${id ? 'updated' : 'added'} successfully!`);
+        modal.hide();
+        refreshTable();
+      })
+      .fail(() => alert('Error saving record.'));
+  });
+
+  $btnDeleteSelected.on('click', () => {
+    const selected = $table.bootstrapTable('getSelections');
+    if (!selected.length || !confirm(`Delete ${selected.length} selected records?`)) return;
+
+    Promise.all(selected.map(row => $.ajax({ url: `${apiBase}/${row.id}`, method: 'DELETE' })))
+      .then(() => {
+        alert('Deleted successfully.');
+        refreshTable();
+        $btnDeleteSelected.prop('disabled', true);
+      })
+      .catch(() => alert('Some deletions failed.'));
+  });
+}
