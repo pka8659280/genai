@@ -21,7 +21,7 @@ public class GenAITemplateRESTController {
 
     @GetMapping
     public List<GenaiTemplate> getAllTemplates() {
-        return service.getAllActiveTemplates(); // Only return non-deleted records
+        return service.getAllActiveTemplates(); // Return only non-deleted entries
     }
 
     @PutMapping("/{id}")

@@ -2,7 +2,6 @@ package com.genai.genai.restController;
 
 import com.genai.genai.model.Knowledge;
 import com.genai.genai.service.KnowledgeServices;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +21,7 @@ public class KnowledgeRESTController {
 
     @GetMapping
     public List<Knowledge> getAllKnowledge() {
-        return service.getAllKnowledges();
+        return service.getAllKnowledges(); // Return only non-deleted entries
     }
 
     @PutMapping("/{id}")

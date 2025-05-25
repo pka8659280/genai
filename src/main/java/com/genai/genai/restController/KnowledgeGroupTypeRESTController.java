@@ -2,7 +2,6 @@ package com.genai.genai.restController;
 
 import com.genai.genai.model.KnowledgeGroupType;
 import com.genai.genai.service.KnowledgeGroupTypeServices;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +21,7 @@ public class KnowledgeGroupTypeRESTController {
 
     @GetMapping
     public List<KnowledgeGroupType> getAllKnowledgeGroupTypes() {
-        return service.getAllKnowledgeGroupTypes();
+        return service.getAllKnowledgeGroupTypes(); // Return only non-deleted entries
     }
 
     @PutMapping("/{id}")
