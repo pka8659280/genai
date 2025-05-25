@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 @Service
 public class KnowledgeGroupTypeServices {
 
@@ -20,7 +19,7 @@ public class KnowledgeGroupTypeServices {
     }
 
     public List<KnowledgeGroupType> getAllKnowledgeGroupTypes() {
-        return repository.findAll();
+        return repository.findByDeletedFalse();
     }
 
     public KnowledgeGroupType updateKnowledgeGroupType(Long id, KnowledgeGroupType knowledgeGroupType) {
@@ -39,6 +38,10 @@ public class KnowledgeGroupTypeServices {
     }
 
     public void deleteKnowledgeGroupType(Long id) {
-        repository.deleteById(id);
+        Optional<KnowledgeGroupType> optional = repository.findById(id);
+        optional.ifPresent(entity -> {
+            entity.setDeleted(true);
+            repository.save(entity);
+        });
     }
 }
