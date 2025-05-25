@@ -2,7 +2,6 @@ package com.genai.genai.service;
 
 import com.genai.genai.model.Knowledge;
 import com.genai.genai.repository.KnowledgeRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,34 +16,47 @@ public class KnowledgeServices {
     private KnowledgeRepository repository;
 
     public Knowledge saveKnowledge(Knowledge knowledge) {
-        knowledge.setDeleted(false); // Always ensure it's not marked deleted on save
+        knowledge.setDeleted(false); // Ensure soft-delete is false on creation
         return repository.save(knowledge);
     }
 
     public List<Knowledge> getAllKnowledges() {
-        return repository.findByDeletedFalse(); // <-- Filter out deleted ones
+        return repository.findByDeletedFalse(); // Return only active (not deleted)
     }
 
     public Knowledge updateKnowledge(String id, Knowledge knowledge) {
         Optional<Knowledge> existingOpt = repository.findById(id);
         if (existingOpt.isPresent()) {
             Knowledge existing = existingOpt.get();
+
+            if (Boolean.TRUE.equals(existing.getDeleted())) {
+                throw new IllegalStateException("Cannot update a deleted knowledge entry.");
+            }
+
             existing.setDescription(knowledge.getDescription());
             existing.setKnowledgeGroupType(knowledge.getKnowledgeGroupType());
             existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(knowledge.getLastEditedByUserId());
+
             return repository.save(existing);
         } else {
             knowledge.setId(id);
+            knowledge.setDeleted(false);
             return repository.save(knowledge);
         }
     }
 
     public void deleteKnowledge(String id) {
         Optional<Knowledge> knowledge = repository.findById(id);
-        knowledge.ifPresent(k -> {
-            k.setDeleted(true); // <-- Soft delete here
+        if (knowledge.isPresent()) {
+            Knowledge k = knowledge.get();
+            if (Boolean.TRUE.equals(k.getDeleted())) {
+                throw new IllegalStateException("Knowledge entry already deleted.");
+            }
+            k.setDeleted(true);
             repository.save(k);
-        });
+        } else {
+            throw new IllegalArgumentException("Knowledge entry with ID " + id + " not found.");
+        }
     }
 }

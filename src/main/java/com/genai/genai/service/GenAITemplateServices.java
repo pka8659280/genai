@@ -5,6 +5,7 @@ import com.genai.genai.repository.GenAITemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,27 +16,34 @@ public class GenAITemplateServices {
     private GenAITemplateRepository repository;
 
     public GenaiTemplate saveTemplate(GenaiTemplate template) {
-        template.setDeleted(false);
+        template.setDeleted(false); // Ensure it's saved as active
         return repository.save(template);
     }
 
     public List<GenaiTemplate> getAllTemplates() {
-        return repository.findByDeletedFalse();
+        return repository.findByDeletedFalse(); // For backward compatibility
+    }
+
+    public List<GenaiTemplate> getAllActiveTemplates() {
+        return repository.findByDeletedFalse(); // For REST controller
     }
 
     public GenaiTemplate updateTemplate(String id, GenaiTemplate template) {
         Optional<GenaiTemplate> existingOpt = repository.findById(id);
         if (existingOpt.isPresent()) {
             GenaiTemplate existing = existingOpt.get();
+
             if (Boolean.TRUE.equals(existing.getDeleted())) {
                 throw new IllegalStateException("Cannot update a deleted template.");
             }
+
             existing.setTitle(template.getTitle());
             existing.setDescription(template.getDescription());
             existing.setSystemInstruction(template.getSystemInstruction());
             existing.setKnowledgeGroupType(template.getKnowledgeGroupType());
-            existing.setLastEditDateTime(java.time.LocalDateTime.now());
+            existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(template.getLastEditedByUserId());
+
             return repository.save(existing);
         } else {
             template.setId(id);
@@ -56,9 +64,5 @@ public class GenAITemplateServices {
         } else {
             throw new IllegalArgumentException("Template with ID " + id + " not found.");
         }
-    }
-
-    public List<GenaiTemplate> getAllActiveTemplates() {
-        return repository.findByDeletedFalse();
     }
 }

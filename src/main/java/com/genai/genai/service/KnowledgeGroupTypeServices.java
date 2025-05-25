@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
 @Service
 public class KnowledgeGroupTypeServices {
 
@@ -15,6 +16,7 @@ public class KnowledgeGroupTypeServices {
     private KnowledgeGroupTypeRepository repository;
 
     public KnowledgeGroupType saveKnowledgeGroupType(KnowledgeGroupType knowledgeGroupType) {
+        knowledgeGroupType.setDeleted(false);
         return repository.save(knowledgeGroupType);
     }
 
@@ -26,22 +28,35 @@ public class KnowledgeGroupTypeServices {
         Optional<KnowledgeGroupType> existingOpt = repository.findById(id);
         if (existingOpt.isPresent()) {
             KnowledgeGroupType existing = existingOpt.get();
+
+            if (Boolean.TRUE.equals(existing.getDeleted())) {
+                throw new IllegalStateException("Cannot update a deleted group type.");
+            }
+
             existing.setGroupName(knowledgeGroupType.getGroupName());
             existing.setDescription(knowledgeGroupType.getDescription());
             existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(knowledgeGroupType.getLastEditedByUserId());
+
             return repository.save(existing);
         } else {
             knowledgeGroupType.setId(id);
+            knowledgeGroupType.setDeleted(false);
             return repository.save(knowledgeGroupType);
         }
     }
 
     public void deleteKnowledgeGroupType(Long id) {
         Optional<KnowledgeGroupType> optional = repository.findById(id);
-        optional.ifPresent(entity -> {
+        if (optional.isPresent()) {
+            KnowledgeGroupType entity = optional.get();
+            if (Boolean.TRUE.equals(entity.getDeleted())) {
+                throw new IllegalStateException("Knowledge group type already deleted.");
+            }
             entity.setDeleted(true);
             repository.save(entity);
-        });
+        } else {
+            throw new IllegalArgumentException("Knowledge group type with ID " + id + " not found.");
+        }
     }
 }
