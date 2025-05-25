@@ -37,7 +37,7 @@ public class KnowledgeGroupType {
     private Long lastEditedByUserId;
 
     @Column(name = "deleted", nullable = false)
-    private Boolean deleted = false; // <-- Soft delete flag
+    private Boolean deleted = false;
 
     @PrePersist
     protected void onCreate() {

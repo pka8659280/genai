@@ -8,5 +8,7 @@ import java.util.List;
 
 @Repository
 public interface GenAITemplateRepository extends JpaRepository<GenaiTemplate, String> {
+
+    // Fetch all GenaiTemplate entries that are not soft-deleted
     List<GenaiTemplate> findByDeletedFalse();
 }

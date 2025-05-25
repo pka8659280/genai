@@ -44,7 +44,7 @@ public class GenaiTemplate {
     private Long lastEditedByUserId;
 
     @Column(name = "deleted", nullable = false)
-    private Boolean deleted = false;  // <-- Changed to object type Boolean
+    private Boolean deleted = false;
 
     @PrePersist
     protected void onCreate() {
