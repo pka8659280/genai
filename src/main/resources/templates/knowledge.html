@@ -97,34 +97,36 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
 
   <script type="module">
-  import { initCrudModalTable, loadDropdown } from '/js/crudModalTable.js';
+    import { initCrudModalTable, loadDropdown } from '/js/crudModalTable.js';
 
-  const knowledgeGroupTypeMap = new Map();
+    const knowledgeGroupTypeMap = new Map();
 
-  function knowledgeGroupTypeFormatter(value) {
-    if (!value) return '';
-    if (typeof value === 'object' && value.groupName) return value.groupName;
-    return knowledgeGroupTypeMap.get(value) || value;
-  }
-  window.knowledgeGroupTypeFormatter = knowledgeGroupTypeFormatter;
+    function knowledgeGroupTypeFormatter(value) {
+      if (!value) return '';
+      if (typeof value === 'object') {
+        return value.groupName || knowledgeGroupTypeMap.get(value.id) || value.id || '';
+      }
+      return knowledgeGroupTypeMap.get(value) || value;
+    }
+    window.knowledgeGroupTypeFormatter = knowledgeGroupTypeFormatter;
 
-  await loadDropdown('knowledgeGroupType', '/api/knowledgeGroupType', knowledgeGroupTypeMap, 'groupName', 'id');
+    await loadDropdown('knowledgeGroupType', '/api/knowledgeGroupType', knowledgeGroupTypeMap, 'groupName', 'id');
 
-  initCrudModalTable({
-    tableId: 'knowledgeTable',
-    modalId: 'knowledgeModal',
-    formId: 'knowledgeForm',
-    apiBase: '/api/knowledge',
-    fields: ['knowledgeGroupType', 'description'],
-    idField: 'knowledgeId',
-    displayIdField: 'knowledgeIdDisplay',
-    addButtonId: 'btnAddNew',
-    deleteButtonId: 'btnDeleteSelected',
-    modalLabelId: 'knowledgeModalLabel',
-    editButtonId: 'modalEditBtn',
-    saveButtonId: 'modalSaveBtn'
-  });
-</script>
+    initCrudModalTable({
+      tableId: 'knowledgeTable',
+      modalId: 'knowledgeModal',
+      formId: 'knowledgeForm',
+      apiBase: '/api/knowledge',
+      fields: ['knowledgeGroupType', 'description'],
+      idField: 'knowledgeId',
+      displayIdField: 'knowledgeIdDisplay',
+      addButtonId: 'btnAddNew',
+      deleteButtonId: 'btnDeleteSelected',
+      modalLabelId: 'knowledgeModalLabel',
+      editButtonId: 'modalEditBtn',
+      saveButtonId: 'modalSaveBtn'
+    });
+  </script>
 
 
 
