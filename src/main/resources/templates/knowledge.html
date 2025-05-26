@@ -12,96 +12,103 @@
 </head>
 <body>
 
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2><i class="bi bi-journal-text"></i> Knowledge Management</h2>
-    <div>
-      <button class="btn btn-danger me-2" id="btnDeleteSelected" disabled>
-        <i class="bi bi-trash"></i> Delete Selected
-      </button>
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#knowledgeModal" id="btnAddNew">
-        <i class="bi bi-plus-circle"></i> Add New
-      </button>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2><i class="bi bi-journal-text"></i> Knowledge Management</h2>
+      <div>
+        <button class="btn btn-danger me-2" id="btnDeleteSelected" disabled>
+          <i class="bi bi-trash"></i> Delete Selected
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#knowledgeModal" id="btnAddNew">
+          <i class="bi bi-plus-circle"></i> Add New
+        </button>
+      </div>
+    </div>
+
+    <table id="knowledgeTable" class="table table-bordered table-hover" data-toggle="table" data-url="/api/knowledge"
+      data-pagination="true" data-search="true" data-show-refresh="true" data-show-columns="true"
+      data-side-pagination="client" data-click-to-select="false" data-maintain-selected="true">
+      <thead class="table-dark">
+        <tr>
+          <th data-field="state" data-checkbox="true"></th>
+          <th data-field="id" data-sortable="true">ID</th>
+          <th data-field="knowledgeGroupType" data-sortable="true" data-formatter="knowledgeGroupTypeFormatter">
+            Knowledge Group</th>
+
+          <th data-field="description" data-sortable="true">Description</th>
+          <th data-field="createdDateTime" data-sortable="true">Created At</th>
+          <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="knowledgeModal" tabindex="-1" aria-labelledby="knowledgeModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form id="knowledgeForm" class="needs-validation" novalidate>
+        <!-- hidden id for form submission -->
+        <input type="hidden" id="knowledgeId" />
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="knowledgeModalLabel">Add Knowledge</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Show ID only when editing/viewing -->
+            <div class="mb-3" id="idFormGroup" style="display:none;">
+              <label for="knowledgeIdDisplay" class="form-label">ID</label>
+              <input type="text" class="form-control" id="knowledgeIdDisplay" readonly />
+            </div>
+
+            <div class="mb-3">
+              <label for="knowledgeGroupType" class="form-label">Knowledge Group <span
+                  class="text-danger">*</span></label>
+              <select class="form-select" id="knowledgeGroupType" required>
+                <option value="" disabled selected>Select Knowledge Group</option>
+                <!-- Options loaded dynamically -->
+              </select>
+              <div class="invalid-feedback">Knowledge Group is required.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <textarea class="form-control" id="description" rows="3"></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="modalEditBtn">Edit</button>
+            <button type="submit" class="btn btn-primary d-none" id="modalSaveBtn">
+              <i class="bi bi-save"></i> Save
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 
-  <table
-    id="knowledgeTable"
-    class="table table-bordered table-hover"
-    data-toggle="table"
-    data-url="/api/knowledge"
-    data-pagination="true"
-    data-search="true"
-    data-show-refresh="true"
-    data-show-columns="true"
-    data-side-pagination="client"
-    data-click-to-select="false"
-    data-maintain-selected="true"
-  >
-    <thead class="table-dark">
-      <tr>
-        <th data-field="state" data-checkbox="true"></th>
-        <th data-field="id" data-sortable="true">ID</th>
-        <th data-field="knowledgeGroupType" data-sortable="true">Knowledge Group</th>
-        <th data-field="description" data-sortable="true">Description</th>
-        <th data-field="createdDateTime" data-sortable="true">Created At</th>
-        <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
-      </tr>
-    </thead>
-  </table>
-</div>
+  <!-- JS dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
 
-<!-- Modal -->
-<div class="modal fade" id="knowledgeModal" tabindex="-1" aria-labelledby="knowledgeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <form id="knowledgeForm" class="needs-validation" novalidate>
-      <!-- hidden id for form submission -->
-      <input type="hidden" id="knowledgeId" />
+  <script type="module">
+  import { initCrudModalTable, loadDropdown } from '/js/crudModalTable.js';
 
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="knowledgeModalLabel">Add Knowledge</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
+  const knowledgeGroupTypeMap = new Map();
 
-        <div class="modal-body">
-          <!-- Show ID only when editing/viewing -->
-          <div class="mb-3" id="idFormGroup" style="display:none;">
-            <label for="knowledgeIdDisplay" class="form-label">ID</label>
-            <input type="text" class="form-control" id="knowledgeIdDisplay" readonly />
-          </div>
+  function knowledgeGroupTypeFormatter(value) {
+    if (!value) return '';
+    if (typeof value === 'object' && value.groupName) return value.groupName;
+    return knowledgeGroupTypeMap.get(value) || value;
+  }
+  window.knowledgeGroupTypeFormatter = knowledgeGroupTypeFormatter;
 
-          <div class="mb-3">
-            <label for="knowledgeGroupType" class="form-label">Knowledge Group <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="knowledgeGroupType" required />
-            <div class="invalid-feedback">Knowledge Group is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" rows="3"></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="modalEditBtn">Edit</button>
-          <button type="submit" class="btn btn-primary d-none" id="modalSaveBtn">
-            <i class="bi bi-save"></i> Save
-          </button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- JS dependencies -->
-<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
-
-<script type="module">
-  import { initCrudModalTable } from '/js/crudModalTable.js';
+  await loadDropdown('knowledgeGroupType', '/api/knowledgeGroupType', knowledgeGroupTypeMap, 'groupName', 'id');
 
   initCrudModalTable({
     tableId: 'knowledgeTable',
@@ -118,6 +125,7 @@
     saveButtonId: 'modalSaveBtn'
   });
 </script>
+
 
 
 </body>

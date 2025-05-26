@@ -59,4 +59,12 @@ public class KnowledgeGroupTypeServices {
             throw new IllegalArgumentException("Knowledge group type with ID " + id + " not found.");
         }
     }
+
+    public Optional<KnowledgeGroupType> getKnowledgeGroupTypeById(String id) {
+        Optional<KnowledgeGroupType> entity = repository.findById(id);
+        if (entity.isPresent() && Boolean.FALSE.equals(entity.get().getDeleted())) {
+            return entity;
+        }
+        return Optional.empty();
+    }
 }

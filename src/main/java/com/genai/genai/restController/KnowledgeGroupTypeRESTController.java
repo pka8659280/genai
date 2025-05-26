@@ -3,6 +3,7 @@ package com.genai.genai.restController;
 import com.genai.genai.model.KnowledgeGroupType;
 import com.genai.genai.service.KnowledgeGroupTypeServices;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,12 +26,20 @@ public class KnowledgeGroupTypeRESTController {
     }
 
     @PutMapping("/{id}")
-    public KnowledgeGroupType updateKnowledgeGroupType(@PathVariable String id, @RequestBody KnowledgeGroupType knowledgeGroupType) {
+    public KnowledgeGroupType updateKnowledgeGroupType(@PathVariable String id,
+            @RequestBody KnowledgeGroupType knowledgeGroupType) {
         return service.updateKnowledgeGroupType(id, knowledgeGroupType);
     }
 
     @DeleteMapping("/{id}")
     public void deleteKnowledgeGroupType(@PathVariable String id) {
         service.deleteKnowledgeGroupType(id);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<KnowledgeGroupType> getKnowledgeGroupTypeById(@PathVariable String id) {
+        return service.getKnowledgeGroupTypeById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

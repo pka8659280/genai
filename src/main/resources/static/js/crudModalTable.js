@@ -1,4 +1,3 @@
-// static/js/crudModalTable.js
 export function initCrudModalTable(config) {
   const {
     tableId,
@@ -44,17 +43,25 @@ export function initCrudModalTable(config) {
   };
 
   const getFormData = () => {
-    const data = { createdByUserId: 1 }; // can be replaced with session user if needed
+    const data = { createdByUserId: 1 }; // Placeholder
     fields.forEach(f => data[f] = fieldInputs[f].value);
     return data;
   };
 
   const setEditable = editable => {
     fields.forEach(f => {
-      if (editable) {
-        fieldInputs[f].removeAttribute('readonly');
+      const el = fieldInputs[f];
+
+      if (!el) return;
+
+      if (el.tagName === 'SELECT') {
+        el.disabled = !editable;
       } else {
-        fieldInputs[f].setAttribute('readonly', 'readonly');
+        if (editable) {
+          el.removeAttribute('readonly');
+        } else {
+          el.setAttribute('readonly', 'readonly');
+        }
       }
     });
   };
@@ -63,6 +70,14 @@ export function initCrudModalTable(config) {
     form.reset();
     setFormData({});
     form.classList.remove('was-validated');
+
+    // Ensure dropdown is disabled initially
+    fields.forEach(f => {
+      const el = fieldInputs[f];
+      if (el && el.tagName === 'SELECT') {
+        el.disabled = true;
+      }
+    });
   };
 
   const refreshTable = () => $table.bootstrapTable('refresh');
@@ -151,4 +166,39 @@ export function initCrudModalTable(config) {
       })
       .catch(() => alert('Some deletions failed.'));
   });
+}
+
+
+/**
+ * Load dropdown options from API into a <select> element and optionally cache it in a map.
+ * 
+ * @param {string} selectId - The DOM ID of the select element.
+ * @param {string} url - The API endpoint to fetch data from.
+ * @param {Map} [map=null] - Optional Map object to store id-to-name mapping.
+ * @param {string} [labelField='name'] - Field in the API response to display as label.
+ * @param {string} [valueField='id'] - Field in the API response to use as option value.
+ */
+export async function loadDropdown(selectId, url, map = null, labelField = 'name', valueField = 'id') {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch from ${url}`);
+    const data = await res.json();
+
+    const select = document.getElementById(selectId);
+    if (!select) throw new Error(`Select element with id '${selectId}' not found`);
+
+    select.innerHTML = '<option value="" disabled selected>Select an option</option>';
+
+    data.forEach(item => {
+      const option = document.createElement('option');
+      option.value = item[valueField];
+      option.textContent = item[labelField];
+      select.appendChild(option);
+
+      if (map) map.set(item[valueField], item[labelField]);
+    });
+  } catch (error) {
+    console.error(error);
+    alert(`Error loading options for #${selectId}: ${error.message}`);
+  }
 }
