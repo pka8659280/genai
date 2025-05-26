@@ -97,18 +97,12 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
 
   <script type="module">
-    import { initCrudModalTable, loadDropdown } from '/js/crudModalTable.js';
 
+    // Define the map globally or in the module scope
     const knowledgeGroupTypeMap = new Map();
 
-    function knowledgeGroupTypeFormatter(value) {
-      if (!value) return '';
-      if (typeof value === 'object') {
-        return value.groupName || knowledgeGroupTypeMap.get(value.id) || value.id || '';
-      }
-      return knowledgeGroupTypeMap.get(value) || value;
-    }
-    window.knowledgeGroupTypeFormatter = knowledgeGroupTypeFormatter;
+
+    import { initCrudModalTable, loadDropdown } from '/js/crudModalTable.js';
 
     await loadDropdown('knowledgeGroupType', '/api/knowledgeGroupType', knowledgeGroupTypeMap, 'groupName', 'id');
 
@@ -126,6 +120,31 @@
       editButtonId: 'modalEditBtn',
       saveButtonId: 'modalSaveBtn'
     });
+  </script>
+
+  <script>
+    // Object to cache group types by id
+    const knowledgeGroupTypeCache = {};
+
+    // Preload all knowledge group types on page load
+    fetch('/api/knowledgeGroupType')
+      .then(res => res.json())
+      .then(dataArray => {
+        dataArray.forEach(item => {
+          knowledgeGroupTypeCache[item.id] = item.groupName;
+        });
+        // After preload, refresh bootstrap table to show proper group names
+        $('#knowledgeTable').bootstrapTable('refresh');
+      })
+      .catch(err => {
+        console.error('Failed to load knowledgeGroupType data:', err);
+      });
+
+    // Formatter function returns groupName synchronously from cache
+    function knowledgeGroupTypeFormatter(id) {
+      if (!id) return '';
+      return knowledgeGroupTypeCache[id] || 'Loading...';
+    }
   </script>
 
 
