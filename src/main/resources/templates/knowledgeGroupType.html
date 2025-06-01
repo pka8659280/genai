@@ -1,3 +1,4 @@
+<!-- knowledgeGroupType.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -11,110 +12,122 @@
 </head>
 <body>
 
-<div class="container mt-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2><i class="bi bi-collection"></i> Knowledge Group Type Management</h2>
-    <div>
-      <button class="btn btn-danger me-2" id="btnDeleteSelected" disabled>
-        <i class="bi bi-trash"></i> Delete Selected
-      </button>
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#knowledgeGroupTypeModal" id="btnAddNew">
-        <i class="bi bi-plus-circle"></i> Add New
-      </button>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h2><i class="bi bi-collection"></i> Knowledge Group Type Management</h2>
+      <div>
+        <button class="btn btn-danger me-2" id="btnDeleteSelected" disabled>
+          <i class="bi bi-trash"></i> Delete Selected
+        </button>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#knowledgeGroupTypeModal" id="btnAddNew">
+          <i class="bi bi-plus-circle"></i> Add New
+        </button>
+      </div>
+    </div>
+
+    <table
+      id="knowledgeGroupTypeTable"
+      class="table table-bordered table-hover"
+      data-toggle="table"
+      data-url="/api/knowledgeGroupType"
+      data-pagination="true"
+      data-search="true"
+      data-show-refresh="true"
+      data-show-columns="true"
+      data-side-pagination="client"
+      data-click-to-select="false"
+      data-maintain-selected="true"     
+      
+      >
+      <thead class="table-dark">
+        <tr>
+          <th data-field="state" data-checkbox="true"></th>
+          <th data-field="id" data-sortable="true">ID</th>
+          <th data-field="groupName" data-sortable="true">Group Name</th>
+          <th data-field="systemInstruction" data-sortable="true" data-formatter="newlineFormatter">System Instruction
+          </th>
+          <th data-field="createdDateTime" data-sortable="true">Created Time</th>
+          <th data-field="lastEditDateTime" data-sortable="true">Edited Time</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="knowledgeGroupTypeModal" tabindex="-1" aria-labelledby="knowledgeGroupTypeModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <form id="knowledgeGroupTypeForm" class="needs-validation" novalidate>
+        <input type="hidden" id="knowledgeGroupTypeId" />
+
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="knowledgeGroupTypeModalLabel">Add Knowledge Group Type</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="mb-3" id="idFormGroup" style="display:none;">
+              <label for="knowledgeGroupTypeIdDisplay" class="form-label">ID</label>
+              <input type="text" class="form-control" id="knowledgeGroupTypeIdDisplay" readonly />
+            </div>
+
+            <div class="mb-3">
+              <label for="groupName" class="form-label">Group Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="groupName" required />
+              <div class="invalid-feedback">Group Name is required.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="systemInstruction" class="form-label">System Instruction</label>
+              <textarea class="form-control" id="systemInstruction" rows="4"
+                style="max-height: 150px; white-space: pre; overflow: auto;"></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="modalEditBtn">Edit</button>
+            <button type="submit" class="btn btn-primary d-none" id="modalSaveBtn">
+              <i class="bi bi-save"></i> Save
+            </button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 
-  <table
-    id="knowledgeGroupTypeTable"
-    class="table table-bordered table-hover"
-    data-toggle="table"
-    data-url="/api/knowledgeGroupType"
-    data-pagination="true"
-    data-search="true"
-    data-show-refresh="true"
-    data-show-columns="true"
-    data-side-pagination="client"
-    data-click-to-select="false"
-    data-maintain-selected="true"
-  >
-    <thead class="table-dark">
-      <tr>
-        <th data-field="state" data-checkbox="true"></th>
-        <th data-field="id" data-sortable="true">ID</th>
-        <th data-field="groupName" data-sortable="true">Group Name</th>
-        <th data-field="description" data-sortable="true">Description</th>
-        <th data-field="createdDateTime" data-sortable="true">Created Time</th>
-        <th data-field="lastEditDateTime" data-sortable="true">Edited Time</th>
-      </tr>
-    </thead>
-  </table>
-</div>
+  <!-- JS dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
 
-<!-- Modal -->
-<div class="modal fade" id="knowledgeGroupTypeModal" tabindex="-1" aria-labelledby="knowledgeGroupTypeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <form id="knowledgeGroupTypeForm" class="needs-validation" novalidate>
-      <input type="hidden" id="knowledgeGroupTypeId" />
+  <!-- Formatter for multiline text -->
+  <script>
+    function newlineFormatter(value) {
+      return value ? value.replace(/\n/g, '<br>') : '';
+    }
+  </script>
 
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="knowledgeGroupTypeModalLabel">Add Knowledge Group Type</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
+  <!-- Modular JS init -->
+  <script type="module">
+    import { initCrudModalTable} from '/js/crudModalTable.js';
 
-        <div class="modal-body">
-          <div class="mb-3" id="idFormGroup" style="display:none;">
-            <label for="knowledgeGroupTypeIdDisplay" class="form-label">ID</label>
-            <input type="text" class="form-control" id="knowledgeGroupTypeIdDisplay" readonly />
-          </div>
-
-          <div class="mb-3">
-            <label for="groupName" class="form-label">Group Name <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="groupName" required />
-            <div class="invalid-feedback">Group Name is required.</div>
-          </div>
-
-          <div class="mb-3">
-            <label for="description" class="form-label">Description</label>
-            <textarea class="form-control" id="description" rows="3"></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" id="modalEditBtn">Edit</button>
-          <button type="submit" class="btn btn-primary d-none" id="modalSaveBtn">
-            <i class="bi bi-save"></i> Save
-          </button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- JS dependencies -->
-<script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
-
-<script type="module">
-  import { initCrudModalTable } from '/js/crudModalTable.js';
-
-  initCrudModalTable({
-    tableId: 'knowledgeGroupTypeTable',
-    modalId: 'knowledgeGroupTypeModal',
-    formId: 'knowledgeGroupTypeForm',
-    apiBase: '/api/knowledgeGroupType',
-    fields: ['groupName', 'description'],
-    idField: 'knowledgeGroupTypeId',
-    displayIdField: 'knowledgeGroupTypeIdDisplay',
-    addButtonId: 'btnAddNew',
-    deleteButtonId: 'btnDeleteSelected',
-    modalLabelId: 'knowledgeGroupTypeModalLabel',
-    editButtonId: 'modalEditBtn',
-    saveButtonId: 'modalSaveBtn'
-  });
-</script>
+    initCrudModalTable({
+      tableId: 'knowledgeGroupTypeTable',
+      modalId: 'knowledgeGroupTypeModal',
+      formId: 'knowledgeGroupTypeForm',
+      apiBase: '/api/knowledgeGroupType',
+      fields: ['groupName', , 'systemInstruction'],
+      idField: 'knowledgeGroupTypeId',
+      displayIdField: 'knowledgeGroupTypeIdDisplay',
+      addButtonId: 'btnAddNew',
+      deleteButtonId: 'btnDeleteSelected',
+      modalLabelId: 'knowledgeGroupTypeModalLabel',
+      editButtonId: 'modalEditBtn',
+      saveButtonId: 'modalSaveBtn'
+    });
+  </script>
 
 </body>
 </html>

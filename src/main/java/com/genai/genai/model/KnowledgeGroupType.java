@@ -21,9 +21,9 @@ public class KnowledgeGroupType {
 
     @Column(name = "group_name", length = 100, nullable = false)
     private String groupName;
-
-    @Column(length = 1000)
-    private String description;
+    @Lob
+    @Column(name = "system_instruction", columnDefinition = "TEXT")
+    private String systemInstruction;
 
     @Column(name = "created_date_time", nullable = false, updatable = false)
     private LocalDateTime createdDateTime;

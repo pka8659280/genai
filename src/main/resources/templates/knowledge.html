@@ -35,8 +35,8 @@
           <th data-field="knowledgeName" data-sortable="true">Knowledge Name</th>
           <th data-field="knowledgeGroupType" data-sortable="true" data-formatter="knowledgeGroupTypeFormatter">
             Knowledge Group</th>
-
-          <th data-field="description" data-sortable="true">Description</th>
+          <th data-field="knowledge" data-sortable="true" data-formatter="newlineFormatter">Knowledge
+          </th>
           <th data-field="createdDateTime" data-sortable="true">Created At</th>
           <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
         </tr>
@@ -81,8 +81,9 @@
             </div>
 
             <div class="mb-3">
-              <label for="description" class="form-label">Description</label>
-              <textarea class="form-control" id="description" rows="3"></textarea>
+              <label for="knowledge" class="form-label">Knowledge</label>
+              <textarea class="form-control" id="knowledge" rows="4"
+                style="max-height: 150px; white-space: pre; overflow: auto;"></textarea>
             </div>
           </div>
 
@@ -118,7 +119,7 @@
       modalId: 'knowledgeModal',
       formId: 'knowledgeForm',
       apiBase: '/api/knowledge',
-      fields: ['knowledgeName','knowledgeGroupType', 'description'],
+      fields: ['knowledgeName', 'knowledgeGroupType', 'knowledge'],
       idField: 'knowledgeId',
       displayIdField: 'knowledgeIdDisplay',
       addButtonId: 'btnAddNew',
@@ -154,7 +155,12 @@
     }
   </script>
 
-
+  <!-- Formatter for multiline text -->
+  <script>
+    function newlineFormatter(value) {
+      return value ? value.replace(/\n/g, '<br>') : '';
+    }
+  </script>
 
 </body>
 </html>

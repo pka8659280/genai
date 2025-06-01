@@ -33,10 +33,10 @@ public class KnowledgeServices {
                 throw new IllegalStateException("Cannot update a deleted knowledge entry.");
             }
 
-            existing.setDescription(knowledge.getDescription());
             existing.setKnowledgeGroupType(knowledge.getKnowledgeGroupType());
             existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(knowledge.getLastEditedByUserId());
+            existing.setKnowledge(knowledge.getKnowledge());
 
             return repository.save(existing);
         } else {

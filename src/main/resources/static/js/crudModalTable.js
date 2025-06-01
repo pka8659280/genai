@@ -1,3 +1,4 @@
+// crudModalTable.js
 export function initCrudModalTable(config) {
   const {
     tableId,
@@ -123,12 +124,23 @@ export function initCrudModalTable(config) {
     $btnDeleteSelected.prop('disabled', !$table.bootstrapTable('getSelections').length);
   });
 
-  $table.on('click-row.bs.table', (_, row, __, field) => {
-    if (field === 'state') return;
-    setFormData(row);
-    switchModalMode('view');
-    modal.show();
-  });
+  $table.on('click-row.bs.table', (e, row, $element, field) => {
+  console.log('Row clicked:', row);
+
+  if (field === 'state') {
+    // Ignore clicks on checkboxes for selection
+    return;
+  }
+
+  // Fill modal inputs with row data
+  setFormData(row);
+
+  // Switch modal to readonly/view mode
+  switchModalMode('view');
+
+  // Show modal dialog
+  modal.show();
+});
 
   document.getElementById(addButtonId).addEventListener('click', () => switchModalMode('add'));
   document.getElementById(editButtonId).addEventListener('click', () => switchModalMode('edit'));

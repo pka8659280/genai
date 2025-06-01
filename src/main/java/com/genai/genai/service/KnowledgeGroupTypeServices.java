@@ -34,7 +34,7 @@ public class KnowledgeGroupTypeServices {
             }
 
             existing.setGroupName(knowledgeGroupType.getGroupName());
-            existing.setDescription(knowledgeGroupType.getDescription());
+            existing.setSystemInstruction(knowledgeGroupType.getSystemInstruction());
             existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(knowledgeGroupType.getLastEditedByUserId());
 

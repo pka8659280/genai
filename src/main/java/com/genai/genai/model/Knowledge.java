@@ -25,8 +25,9 @@ public class Knowledge {
     @Column(name = "knowledge_name", length = 100, nullable = false)
     private String knowledgeName;
 
-    @Column(length = 1000)
-    private String description;
+    @Lob
+    @Column(name = "knowledge", columnDefinition = "TEXT")
+    private String knowledge;
 
     @Column(name = "created_date_time", nullable = false, updatable = false)
     private LocalDateTime createdDateTime;
