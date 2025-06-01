@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface KnowledgeRepository extends JpaRepository<Knowledge, String> {
-
-    // Fetch all Knowledge entries that are not soft-deleted
     List<Knowledge> findByDeletedFalse();
+    List<Knowledge> findByKnowledgeGroupTypeAndDeletedFalse(String knowledgeGroupTypeId); // NEW
 }

@@ -33,4 +33,9 @@ public class KnowledgeRESTController {
     public void deleteKnowledge(@PathVariable String id) {
         service.deleteKnowledge(id);
     }
+
+    @GetMapping("/groupType/{groupTypeId}")
+    public List<Knowledge> getKnowledgeByGroupType(@PathVariable String groupTypeId) {
+        return service.getKnowledgeByGroupTypeId(groupTypeId);
+    }
 }

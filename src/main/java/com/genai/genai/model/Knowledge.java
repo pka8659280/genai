@@ -22,6 +22,9 @@ public class Knowledge {
     @Column(name = "knowledge_group_type", length = 100, nullable = false)
     private String knowledgeGroupType;
 
+    @Column(name = "knowledge_name", length = 100, nullable = false)
+    private String knowledgeName;
+
     @Column(length = 1000)
     private String description;
 

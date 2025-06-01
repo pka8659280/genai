@@ -32,6 +32,7 @@
         <tr>
           <th data-field="state" data-checkbox="true"></th>
           <th data-field="id" data-sortable="true">ID</th>
+          <th data-field="knowledgeName" data-sortable="true">Knowledge Name</th>
           <th data-field="knowledgeGroupType" data-sortable="true" data-formatter="knowledgeGroupTypeFormatter">
             Knowledge Group</th>
 
@@ -61,6 +62,12 @@
             <div class="mb-3" id="idFormGroup" style="display:none;">
               <label for="knowledgeIdDisplay" class="form-label">ID</label>
               <input type="text" class="form-control" id="knowledgeIdDisplay" readonly />
+            </div>
+
+            <div class="mb-3">
+              <label for="knowledgeName" class="form-label">Knowledge Name <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="knowledgeName" required />
+              <div class="invalid-feedback">Knowledge Name is required.</div>
             </div>
 
             <div class="mb-3">
@@ -111,7 +118,7 @@
       modalId: 'knowledgeModal',
       formId: 'knowledgeForm',
       apiBase: '/api/knowledge',
-      fields: ['knowledgeGroupType', 'description'],
+      fields: ['knowledgeName','knowledgeGroupType', 'description'],
       idField: 'knowledgeId',
       displayIdField: 'knowledgeIdDisplay',
       addButtonId: 'btnAddNew',

@@ -59,4 +59,8 @@ public class KnowledgeServices {
             throw new IllegalArgumentException("Knowledge entry with ID " + id + " not found.");
         }
     }
+
+    public List<Knowledge> getKnowledgeByGroupTypeId(String groupTypeId) {
+        return repository.findByKnowledgeGroupTypeAndDeletedFalse(groupTypeId);
+    }
 }
