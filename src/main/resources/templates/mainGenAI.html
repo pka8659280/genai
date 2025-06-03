@@ -3,47 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <title>Knowledge Group Type Selector</title>
-
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-
-  <!-- Bootstrap Table CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.21.2/dist/bootstrap-table.min.css" rel="stylesheet" />
-
-  <!-- Custom CSS for preformatted text -->
   <style>
     .preformatted {
       white-space: pre;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.7/marked.min.js"></script>
 </head>
 <body>
-
   <div class="container mt-4">
 
-    <!-- Select Group Type -->
+    <!-- Group Type Selection -->
     <div class="card mb-4 shadow-sm">
       <div class="card-header">
         <h5>GEN AI</h5>
       </div>
       <div class="card-body">
         <form id="groupTypeForm" class="row g-3">
-          <!-- Group Type Select -->
           <div class="col-12">
             <label for="groupTypeSelect" class="form-label">Select Group Type</label>
             <select class="form-select" id="groupTypeSelect" name="groupType" required>
               <option value="" disabled selected>Select a Group Type</option>
             </select>
           </div>
-
-          <!-- Question input -->
           <div class="col-12">
             <label for="questionInput" class="form-label">Question</label>
             <input type="text" class="form-control" id="questionInput" name="question"
               placeholder="Enter your question" />
           </div>
-
-          <!-- Submit button placed below the question -->
           <div class="col-12">
             <button type="submit" class="btn btn-primary w-100">Generate</button>
           </div>
@@ -51,69 +40,101 @@
       </div>
     </div>
 
-    <!-- Blank Answer Frame Card -->
-    <div class="card mb-4 shadow-sm">
-      <div class="card-header bg-secondary text-white">
-        <h5 class="mb-0">Answer</h5>
+    <!-- Tab Panel for Results (Always visible with blank content initially) -->
+    <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="answer-tab" data-bs-toggle="tab" data-bs-target="#answer" type="button"
+          role="tab">Answer</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button"
+          role="tab">Group Info</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="knowledge-tab" data-bs-toggle="tab" data-bs-target="#knowledge" type="button"
+          role="tab">Knowledge Table</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="json-tab" data-bs-toggle="tab" data-bs-target="#json" type="button" role="tab">JSON
+          Payload</button>
+      </li>
+    </ul>
+
+    <div class="tab-content mt-3" id="resultTabsContent">
+      <div class="tab-pane fade show active" id="answer" role="tabpanel" aria-labelledby="answer-tab">
+        <div class="card shadow-sm">
+          <div class="card-header bg-secondary text-white">
+            <h5 class="mb-0">Answer</h5>
+          </div>
+          <div class="card-body" id="answerFrame" style="min-height: 150px;"></div>
+        </div>
       </div>
-      <div class="card-body" id="answerFrame" style="min-height: 150px;">
-        <!-- Answer content will appear here -->
+
+      <div class="tab-pane fade" id="info" role="tabpanel" aria-labelledby="info-tab">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Knowledge Group Type Details</h5>
+          </div>
+          <div class="card-body" id="groupTypeDetails"></div>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="knowledge" role="tabpanel" aria-labelledby="knowledge-tab">
+        <div>
+          <table id="knowledgeTable" class="table table-striped" data-search="true" data-pagination="true"
+            data-page-size="5" data-show-columns="true" data-toggle="table">
+            <thead>
+              <tr>
+                <th data-field="index" data-formatter="indexFormatter" data-width="50" data-align="center">#</th>
+                <th data-field="knowledgeName" data-sortable="true">Knowledge Name</th>
+                <th data-field="knowledge" data-sortable="true">Knowledge</th>
+                <th data-field="createdDateTime" data-sortable="true">Created</th>
+                <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
+              </tr>
+            </thead>
+          </table>
+        </div>
+      </div>
+
+      <div class="tab-pane fade" id="json" role="tabpanel" aria-labelledby="json-tab">
+        <div class="card shadow-sm">
+          <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Generated JSON Payload</h5>
+            <button id="copyJsonBtn" class="btn btn-sm btn-light">Copy JSON</button>
+          </div>
+          <div class="card-body">
+            <pre id="jsonPayloadDisplay" class="preformatted"></pre>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- Group Type Info -->
-    <div id="groupTypeInfo" class="card mb-4 shadow-sm" style="display:none;">
-      <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Knowledge Group Type Details</h5>
-      </div>
-      <div class="card-body" id="groupTypeDetails"></div>
-    </div>
-
-    <!-- Knowledge Table -->
-    <div id="knowledgeSection" style="display:none;">
-      <table id="knowledgeTable" class="table table-striped" data-search="true" data-pagination="true"
-        data-page-size="5" data-show-columns="true" data-toggle="table">
-        <thead>
-          <tr>
-            <th data-field="index" data-formatter="indexFormatter" data-width="50" data-align="center">#</th>
-            <th data-field="knowledgeName" data-sortable="true">Knowledge Name</th>
-            <th data-field="knowledge" data-sortable="true">Knowledge</th>
-            <th data-field="createdDateTime" data-sortable="true">Created</th>
-            <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
-          </tr>
-        </thead>
-      </table>
-    </div>
-
   </div>
 
-  <!-- JS Dependencies -->
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Bootstrap Table JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.21.2/dist/bootstrap-table.min.js"></script>
 
   <script>
     const groupTypeDataMap = {};
 
-    // Index formatter for Bootstrap Table
     function indexFormatter(value, row, index) {
       return index + 1;
     }
 
-    // Format ISO datetime to local string
     function formatDateTime(dateString) {
       if (!dateString) return '';
       return new Date(dateString).toLocaleString();
     }
 
-    // Escape HTML text
     function escapeHtml(text) {
       return $('<div>').text(text).html();
     }
 
-    // Load group types from server
+    function generateRandomJobUid() {
+      return crypto.randomUUID();
+    }
+
     function loadGroupTypes() {
       return $.ajax({
         url: '/api/knowledgeGroupType',
@@ -127,7 +148,6 @@
       }).fail(() => alert('Failed to load Knowledge Group Types.'));
     }
 
-    // Render group type info card
     function renderGroupTypeInfo(groupType) {
       const html = `
       <dl class="row">
@@ -141,21 +161,18 @@
         <dd class="col-sm-9">${formatDateTime(groupType.lastEditDateTime)}</dd>
       </dl>`;
       $('#groupTypeDetails').html(html);
-      $('#groupTypeInfo').show();
     }
 
-    // Prepare knowledge data for Bootstrap Table
     function prepareKnowledgeData(knowledgeList) {
       return knowledgeList.map(k => ({
         ...k,
         createdDateTime: formatDateTime(k.createdDateTime),
         lastEditDateTime: formatDateTime(k.lastEditDateTime),
         knowledgeName: escapeHtml(k.knowledgeName),
-        knowledge: `<div class="preformatted">${escapeHtml(k.knowledge || '')}</div>`
+        knowledge: marked.parse(k.knowledge || '')
       }));
     }
 
-    // Load knowledge entries by group type id
     function loadKnowledgeByGroupType(groupTypeId) {
       return $.ajax({
         url: `/api/knowledge/groupType/${groupTypeId}`,
@@ -163,41 +180,127 @@
       });
     }
 
+    function pollJobStatus(jobUid, interval = 3000, maxAttempts = 20) {
+      let attempts = 0;
+      return new Promise((resolve, reject) => {
+        const timer = setInterval(() => {
+          attempts++;
+          $.ajax({
+            url: `http://127.0.0.1:8081/jobs/${jobUid}`,
+            method: 'GET',
+            dataType: 'json'
+          })
+            .done(response => {
+              if (response.status === 'COMPLETED') {
+                clearInterval(timer);
+                resolve(response.result);
+              } else if (response.status === 'FAILED') {
+                clearInterval(timer);
+                reject('Job failed to complete.');
+              } else if (attempts >= maxAttempts) {
+                clearInterval(timer);
+                reject('Polling timed out');
+              }
+            })
+            .fail(() => {
+              clearInterval(timer);
+              reject('Failed to fetch job status');
+            });
+        }, interval);
+      });
+    }
+
     $(document).ready(() => {
       loadGroupTypes();
+      $('#knowledgeTable').bootstrapTable({ data: [] });
 
       $('#groupTypeForm').on('submit', e => {
         e.preventDefault();
+
+        // Show Answer tab right away on generate click
+        var answerTabTrigger = new bootstrap.Tab(document.querySelector('#answer-tab'));
+        answerTabTrigger.show();
+
+        const $generateBtn = $('#groupTypeForm button[type="submit"]');
+        $generateBtn.prop('disabled', true).text('Generating...');
+
         const selectedId = $('#groupTypeSelect').val();
         if (!selectedId) {
           alert('Please select a group type.');
+          $generateBtn.prop('disabled', false).text('Generate');
           return;
         }
 
         const groupType = groupTypeDataMap[selectedId];
         renderGroupTypeInfo(groupType);
 
-        loadKnowledgeByGroupType(selectedId)
-          .done(knowledgeList => {
-            $('#knowledgeSection').show();
+        loadKnowledgeByGroupType(selectedId).done(knowledgeList => {
+          const data = prepareKnowledgeData(knowledgeList);
+          $('#knowledgeTable').bootstrapTable('load', data);
 
-            if (knowledgeList.length === 0) {
-              $('#knowledgeTable').bootstrapTable('load', []);
-              alert('No knowledge entries found for this group type.');
-              return;
-            }
+          const knowledgeText = knowledgeList.map(k => {
+            return `Knowledge Name:- \n ${k.knowledgeName}\n Knowledge:- \n${k.knowledge}`;
+          }).join('\n\n');
 
-            const data = prepareKnowledgeData(knowledgeList);
-            $('#knowledgeTable').bootstrapTable('load', data);
-          })
-          .fail(() => {
-            alert('Failed to load Knowledge entries.');
-            $('#knowledgeSection').hide();
+          const jsonPayload = {
+            job_uid: generateRandomJobUid(),
+            created_by_user_uid: 'user1423',
+            job_type: groupType.groupName,
+            system_instruction: groupType.systemInstruction || '',
+            conversation_history: '',
+            user_message: knowledgeText + '\n\n' + ($('#questionInput').val() || ''),
+            group_type: groupType.groupName,
+          };
+
+          $('#jsonPayloadDisplay').text(JSON.stringify(jsonPayload, null, 2));
+
+          $.ajax({
+            url: 'http://127.0.0.1:8081/addJob',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(jsonPayload)
+          }).done(() => {
+            $('#answerFrame').html('<em>Waiting for result...</em>');
+
+            pollJobStatus(jsonPayload.job_uid)
+              .then(result => {
+                // Force show Answer tab on completion too
+                var answerTabTrigger = new bootstrap.Tab(document.querySelector('#answer-tab'));
+                answerTabTrigger.show();
+
+                $('#answerFrame').html(marked.parse(result));
+                $generateBtn.prop('disabled', false).text('Generate');
+              })
+              .catch(err => {
+                var answerTabTrigger = new bootstrap.Tab(document.querySelector('#answer-tab'));
+                answerTabTrigger.show();
+
+                $('#answerFrame').text('Error: ' + err);
+                $generateBtn.prop('disabled', false).text('Generate');
+              });
+          }).fail(() => {
+            var answerTabTrigger = new bootstrap.Tab(document.querySelector('#answer-tab'));
+            answerTabTrigger.show();
+
+            $('#answerFrame').text('Failed to submit job.');
+            $generateBtn.prop('disabled', false).text('Generate');
           });
+        }).fail(() => {
+          alert('Failed to load Knowledge entries.');
+          $generateBtn.prop('disabled', false).text('Generate');
+        });
       });
 
-      // Initialize Bootstrap Table with empty data
-      $('#knowledgeTable').bootstrapTable({ data: [] });
+
+
+
+      $('#copyJsonBtn').on('click', () => {
+        navigator.clipboard.writeText($('#jsonPayloadDisplay').text()).then(() => {
+          alert('JSON copied to clipboard.');
+        }).catch(err => {
+          alert('Failed to copy JSON: ' + err);
+        });
+      });
     });
   </script>
 
