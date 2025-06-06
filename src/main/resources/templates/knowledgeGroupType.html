@@ -102,11 +102,13 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.24.1/dist/bootstrap-table.min.js"></script>
 
-  <!-- Formatter for multiline text -->
-  <script>
-    function newlineFormatter(value) {
-      return value ? value.replace(/\n/g, '<br>') : '';
-    }
+ 
+  <script type="module">
+    import { escapeCodeString } from '/js/crudModalTable.js';
+
+    window.newlineFormatter = function (value) {
+      return value ? escapeCodeString(value,true): '';
+    };
   </script>
 
   <!-- Modular JS init -->

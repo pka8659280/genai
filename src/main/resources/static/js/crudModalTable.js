@@ -125,22 +125,22 @@ export function initCrudModalTable(config) {
   });
 
   $table.on('click-row.bs.table', (e, row, $element, field) => {
-  console.log('Row clicked:', row);
+    console.log('Row clicked:', row);
 
-  if (field === 'state') {
-    // Ignore clicks on checkboxes for selection
-    return;
-  }
+    if (field === 'state') {
+      // Ignore clicks on checkboxes for selection
+      return;
+    }
 
-  // Fill modal inputs with row data
-  setFormData(row);
+    // Fill modal inputs with row data
+    setFormData(row);
 
-  // Switch modal to readonly/view mode
-  switchModalMode('view');
+    // Switch modal to readonly/view mode
+    switchModalMode('view');
 
-  // Show modal dialog
-  modal.show();
-});
+    // Show modal dialog
+    modal.show();
+  });
 
   document.getElementById(addButtonId).addEventListener('click', () => switchModalMode('add'));
   document.getElementById(editButtonId).addEventListener('click', () => switchModalMode('edit'));
@@ -213,4 +213,21 @@ export async function loadDropdown(selectId, url, map = null, labelField = 'name
     console.error(error);
     alert(`Error loading options for #${selectId}: ${error.message}`);
   }
+}
+
+/**
+ * Escapes a code string (Java, Python, XML, etc.) to be safely displayed in HTML.
+ * Optionally replaces newlines with <br> tags.
+ * 
+ * @param {string} code - The raw code string to escape.
+ * @param {boolean} [applyBreakReplace=false] - Whether to replace newline characters with <br>.
+ * @returns {string} - The HTML-safe escaped string.
+ */
+export function escapeCodeString(code, applyBreakReplace = false) {
+  if (typeof he === 'undefined') {
+    console.warn('he.js is not loaded. Include https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js');
+    return code;
+  }
+  const escaped = he.encode(code, { useNamedReferences: true });
+  return applyBreakReplace ? escaped.replace(/\n/g, '<br>') : escaped;
 }
