@@ -37,6 +37,7 @@ public class KnowledgeGroupTypeServices {
             existing.setSystemInstruction(knowledgeGroupType.getSystemInstruction());
             existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(knowledgeGroupType.getLastEditedByUserId());
+            existing.setRequestQuestionTemplate(knowledgeGroupType.getRequestQuestionTemplate());
 
             return repository.save(existing);
         } else {

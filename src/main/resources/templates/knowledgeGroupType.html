@@ -44,8 +44,10 @@
           <th data-field="state" data-checkbox="true" data-width="3%"></th>
           <th data-field="id" data-sortable="true" data-width="15%" class="text-truncate">ID</th>
           <th data-field="groupName" data-sortable="true" data-width="24%" class="text-truncate">Group Name</th>
-          <th data-field="systemInstruction" data-sortable="true" data-width="28%" class="text-truncate">System Instruction
-          </th>          
+          <th data-field="systemInstruction" data-sortable="true" data-width="14%" class="text-truncate">System Instruction
+          </th>   
+          <th data-field="requestQuestionTemplate" data-sortable="true" data-width="14%" class="text-truncate">Request/Question Template
+          </th>        
           <th data-field="createdDateTime" data-sortable="true" data-width="15%" data-formatter="dateFormatter"
             class="text-truncate">Created At</th>
 
@@ -86,6 +88,12 @@
               <textarea class="form-control" id="systemInstruction"
                 style="white-space: pre; overflow: auto; height: 400px;" ></textarea>
             </div>
+
+            <div class="mb-3">
+              <label for="requestQuestionTemplate" class="form-label">Request/Question Template</label>
+              <textarea class="form-control" id="requestQuestionTemplate"
+                style="white-space: pre; overflow: auto; height: 400px;" ></textarea>
+            </div>
           </div>
 
           <div class="modal-footer">
@@ -124,7 +132,7 @@
       modalId: 'knowledgeGroupTypeModal',
       formId: 'knowledgeGroupTypeForm',
       apiBase: '/api/knowledgeGroupType',
-      fields: ['groupName', 'systemInstruction'],
+      fields: ['groupName', 'systemInstruction','requestQuestionTemplate'],
       idField: 'knowledgeGroupTypeId',
       displayIdField: 'knowledgeGroupTypeIdDisplay',
       addButtonId: 'btnAddNew',

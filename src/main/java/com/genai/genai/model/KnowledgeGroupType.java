@@ -26,6 +26,10 @@ public class KnowledgeGroupType {
     @Column(name = "system_instruction", columnDefinition = "TEXT")
     private String systemInstruction;
 
+    @Lob
+    @Column(name = "request_question_template", columnDefinition = "TEXT")
+    private String requestQuestionTemplate;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_date_time", nullable = false, updatable = false)
     private LocalDateTime createdDateTime;
