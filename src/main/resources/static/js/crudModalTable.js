@@ -270,3 +270,13 @@ export function escapeCodeString(code, applyBreakReplace = false) {
   const escaped = he.encode(trimmedCode, { useNamedReferences: true });
   return applyBreakReplace ? escaped.replace(/\n/g, '<br>') : escaped;
 }
+
+
+export function dateFormatter(value, row, index) {
+  if (!value) return '';
+  const date = new Date(value);
+  return date.toLocaleString();
+}
+
+// Make it globally available for bootstrap-table's inline data-formatter attribute
+window.dateFormatter = dateFormatter;
