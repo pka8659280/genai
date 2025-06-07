@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Entity
 @Table(name = "knowledge_group_type")
@@ -25,9 +26,11 @@ public class KnowledgeGroupType {
     @Column(name = "system_instruction", columnDefinition = "TEXT")
     private String systemInstruction;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_date_time", nullable = false, updatable = false)
     private LocalDateTime createdDateTime;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "last_edit_date_time")
     private LocalDateTime lastEditDateTime;
 

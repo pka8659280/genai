@@ -29,9 +29,9 @@
             </select>
           </div>
           <div class="col-12">
-            <label for="questionInput" class="form-label">Question</label>
-            <input type="text" class="form-control" id="questionInput" name="question"
-              placeholder="Enter your question" />
+            <label for="questionInput" class="form-label">Question/Request</label>
+            <textarea class="form-control" id="questionInput" name="question"
+              placeholder="Enter your question or request" style="height: 150px;"></textarea>
           </div>
           <div class="col-12">
             <button type="submit" class="btn btn-primary w-100">Generate</button>
@@ -70,7 +70,7 @@
           <div class="card-header bg-secondary text-white">
             <h5 class="mb-0">Answer</h5>
           </div>
-          <div class="card-body" id="answerFrame" style="min-height: 150px;"></div>
+          <div class="card-body" id="answerFrame"></div>
         </div>
       </div>
 
@@ -86,14 +86,22 @@
       <div class="tab-pane fade" id="knowledge" role="tabpanel" aria-labelledby="knowledge-tab">
         <div>
           <table id="knowledgeTable" class="table table-striped" data-search="true" data-pagination="true"
-            data-page-size="5" data-show-columns="true" data-toggle="table">
+            data-page-size="5" data-show-columns="true" data-toggle="table" style="table-layout: fixed; width: 100%;">
             <thead>
               <tr>
-                <th data-field="index" data-formatter="indexFormatter" data-width="50" data-align="center">#</th>
-                <th data-field="knowledgeName" data-sortable="true">Knowledge Name</th>
-                <th data-field="knowledge" data-sortable="true" data-formatter="newlineFormatter">Knowledge</th>
-                <th data-field="createdDateTime" data-sortable="true">Created</th>
-                <th data-field="lastEditDateTime" data-sortable="true">Last Edited</th>
+                <th data-field="index" data-formatter="indexFormatter" data-width="3%" data-align="center"
+                  class="text-truncate">#</th>
+                <th data-field="knowledgeName" data-sortable="true" data-width="30%" class="text-truncate">Knowledge
+                  Name</th>
+
+                <th data-field="knowledge" data-sortable="true" data-width="25%" class="text-truncate"
+                  style="white-space: nowrap;" data-formatter="newlineFormatterWithoutBreak">
+                  Knowledge
+                </th>
+                <th data-field="createdDateTime" data-sortable="true" data-width="20%" class="text-truncate">Created
+                </th>
+                <th data-field="lastEditDateTime" data-sortable="true" data-width="20%" class="text-truncate">Last
+                  Edited</th>
               </tr>
             </thead>
           </table>
@@ -182,14 +190,29 @@
       const html = `
     <dl class="row">
       <dt class="col-sm-3">Knowledge Group Name</dt>
-      <dd class="col-sm-9">${escapeHtml(groupType.groupName)}</dd>
+      <dd class="col-sm-9">
+        <div class="p-2 border rounded bg-light">
+          ${escapeHtml(groupType.groupName)}
+        </div>
+      </dd>
+
       <dt class="col-sm-3">System Instruction</dt>
-      <dd class="col-sm-9"><div class="preformatted">${escapeHtml(groupType.systemInstruction || '')}</div></dd>
+      <dd class="col-sm-9">
+        <div class="p-2 border rounded bg-light overflow-auto"
+             style="white-space: pre-line; resize: vertical; min-height: 100px; max-height: 300px;">${escapeHtml(groupType.systemInstruction || '')}</div>
+      </dd>
+
       <dt class="col-sm-3">Created</dt>
-      <dd class="col-sm-9">${formatDateTime(groupType.createdDateTime)}</dd>
+      <dd class="col-sm-9">
+        <div class="p-2 border rounded bg-light">${formatDateTime(groupType.createdDateTime)}</div>
+      </dd>
+
       <dt class="col-sm-3">Last Edited</dt>
-      <dd class="col-sm-9">${formatDateTime(groupType.lastEditDateTime)}</dd>
+      <dd class="col-sm-9">
+        <div class="p-2 border rounded bg-light">${formatDateTime(groupType.lastEditDateTime)}</div>
+      </dd>
     </dl>`;
+
       $('#groupTypeDetails').html(html);
     }
 
@@ -385,7 +408,11 @@
     import { escapeCodeString } from '/js/crudModalTable.js';
 
     window.newlineFormatter = function (value) {
-      return value ? escapeCodeString(value,true): '';
+      return value ? escapeCodeString(value, true) : '';
+    };
+
+    window.newlineFormatterWithoutBreak = function (value) {
+      return value ? escapeCodeString(value, false) : '';
     };
   </script>
 

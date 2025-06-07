@@ -20,6 +20,34 @@ export function initCrudModalTable(config) {
   const form = document.getElementById(formId);
   const $btnDeleteSelected = $(`#${deleteButtonId}`);
 
+  // Inject CSS styles for edit and readonly modes dynamically (only once)
+  function injectModeStyles() {
+    if (document.getElementById('crud-modal-table-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'crud-modal-table-styles';
+    style.textContent = `
+  .editable-mode input,
+  .editable-mode select,
+  .editable-mode textarea {
+    background-color: white !important;
+    color: black !important;
+    border-color: #ced4da !important;
+    pointer-events: auto !important;
+  }
+  .readonly-mode input,
+  .readonly-mode select,
+  .readonly-mode textarea {
+    background-color: #e9ecef !important;
+    color: #6c757d !important;
+    border-color: #ced4da !important;
+    /* pointer-events removed so scrolling works */
+  }
+`;
+    document.head.appendChild(style);
+  }
+  injectModeStyles();
+
   const fieldInputs = fields.reduce((acc, key) => {
     acc[key] = document.getElementById(key);
     return acc;
@@ -49,10 +77,18 @@ export function initCrudModalTable(config) {
     return data;
   };
 
+  // Toggle readonly vs editable styling and attributes
   const setEditable = editable => {
+    if (editable) {
+      form.classList.add('editable-mode');
+      form.classList.remove('readonly-mode');
+    } else {
+      form.classList.add('readonly-mode');
+      form.classList.remove('editable-mode');
+    }
+
     fields.forEach(f => {
       const el = fieldInputs[f];
-
       if (!el) return;
 
       if (el.tagName === 'SELECT') {
@@ -125,8 +161,6 @@ export function initCrudModalTable(config) {
   });
 
   $table.on('click-row.bs.table', (e, row, $element, field) => {
-    console.log('Row clicked:', row);
-
     if (field === 'state') {
       // Ignore clicks on checkboxes for selection
       return;
@@ -180,6 +214,7 @@ export function initCrudModalTable(config) {
   });
 }
 
+// --- Additional exports below as in your original code ---
 
 /**
  * Load dropdown options from API into a <select> element and optionally cache it in a map.
@@ -228,6 +263,10 @@ export function escapeCodeString(code, applyBreakReplace = false) {
     console.warn('he.js is not loaded. Include https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js');
     return code;
   }
-  const escaped = he.encode(code, { useNamedReferences: true });
+
+  // Remove leading whitespace from the whole string (optional)
+  const trimmedCode = code.replace(/^\s+/, '');
+
+  const escaped = he.encode(trimmedCode, { useNamedReferences: true });
   return applyBreakReplace ? escaped.replace(/\n/g, '<br>') : escaped;
 }

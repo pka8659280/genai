@@ -37,6 +37,7 @@ public class KnowledgeServices {
             existing.setLastEditDateTime(LocalDateTime.now());
             existing.setLastEditedByUserId(knowledge.getLastEditedByUserId());
             existing.setKnowledge(knowledge.getKnowledge());
+            existing.setKnowledgeName(knowledge.getKnowledgeName());
 
             return repository.save(existing);
         } else {
