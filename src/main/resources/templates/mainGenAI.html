@@ -416,6 +416,29 @@
     };
   </script>
 
+  <script>
+  $(document).ready(function () {
+    $('#groupTypeSelect').on('change', function () {
+      const selectedValue = $(this).val();
+      
+      if (selectedValue) {
+        $.ajax({
+          url: '/api/knowledgeGroupType/' + selectedValue,
+          type: 'GET',
+          success: function (data) {          
+            const rawText = JSON.stringify(data.requestQuestionTemplate, null, 2);
+            const parsedText = JSON.parse(rawText); // This converts escaped sequences to actual characters
+            $('#questionInput').val(parsedText);
+          },
+          error: function () {
+            alert('Failed to fetch group type details.');
+          }
+        });
+      }
+    });
+  });
+</script>
+
 
 </body>
 </html>
