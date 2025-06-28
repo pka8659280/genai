@@ -260,7 +260,7 @@
             .done(response => {
               if (response.status === 'COMPLETED') {
                 clearInterval(timer);
-                resolve(response.result);
+                resolve(response);
               } else if (response.status === 'FAILED') {
                 clearInterval(timer);
                 reject('Job failed to complete.');
@@ -276,6 +276,7 @@
         }, interval);
       });
     };
+
 
     // Refresh job list table
     const refreshJobList = () => {
@@ -365,12 +366,18 @@
           });
 
           // Poll for job result
-          const result = await pollJobStatus(jsonPayload.job_uid);
+          const jobData = await pollJobStatus(jsonPayload.job_uid);
+          const result = jobData.result;
+          const duration = jobData.duration_seconds ? jobData.duration_seconds.toFixed(2) : '—';
+
           new bootstrap.Tab(document.querySelector('#answer-tab')).show();
-          // $('#answerFrame').html(marked.parse(result));
-          $('#answerFrame').html(
-  `<div class="p-3 border rounded bg-light text-dark" style="overflow-x: auto; white-space: pre-wrap; font-family: monospace;">${he.encode(result)}</div>`
-);
+
+          $('#answerFrame').html(`
+  <div class="mb-2 text-end text-muted small">
+    ⏱️ Time taken: ${duration} seconds
+  </div>
+  <div class="p-3 border rounded bg-light text-dark" style="overflow-x: auto; white-space: pre-wrap; font-family: monospace;">${he.encode(result)}</div>
+`);
         } catch (err) {
           new bootstrap.Tab(document.querySelector('#answer-tab')).show();
           $('#answerFrame').text(typeof err === 'string' ? `Error: ${err}` : 'Failed to process the request.');
