@@ -58,7 +58,7 @@
     <div class="tab-content bg-white border border-top-0 p-3 shadow-sm rounded-bottom" id="resultTabsContent">
       <div class="tab-pane fade show active" id="answer" role="tabpanel">
         <div class="card border-0 bg-body-secondary">
-          <div class="card-header bg-secondary text-white">Answer</div>
+          <div class="card-header bg-primary text-white">Answer</div>
           <div class="card-body" id="answerFrame"></div>
         </div>
       </div>
@@ -71,7 +71,7 @@
 
       <div class="tab-pane fade" id="knowledge" role="tabpanel">
         <div class="card border-0 bg-body-secondary">
-          <div class="card-header bg-warning text-dark">Knowledge Table</div>
+          <div class="card-header bg-primary text-white">Knowledge Table</div>
           <div class="card-body">
             <table id="knowledgeTable" class="table table-striped" data-search="true" data-pagination="true"
               data-page-size="5" data-show-columns="true" data-toggle="table" style="table-layout: fixed; width: 100%;">
@@ -93,8 +93,8 @@
 
       <div class="tab-pane fade" id="json" role="tabpanel">
         <div class="card border-0 bg-body-secondary">
-          <div class="card-header bg-info text-white d-flex justify-content-between">
-            <h5 class="mb-0">Generated JSON Payload</h5>
+          <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h7 class="mb-0">Generated JSON Payload</h7>
             <button id="copyJsonBtn" class="btn btn-sm btn-light">Copy JSON</button>
           </div>
           <div class="card-body">
@@ -105,7 +105,7 @@
 
       <div class="tab-pane fade" id="job" role="tabpanel">
         <div class="card border-0 bg-body-secondary">
-          <div class="card-header bg-warning text-dark">Job List Status</div>
+          <div class="card-header bg-primary text-white">Job List Status</div>
           <div class="card-body">
             <table id="jobListTable" class="table table-striped" data-search="true" data-pagination="true"
               data-page-size="5" data-show-columns="true" data-toggle="table" style="table-layout: fixed; width: 100%;">
@@ -167,6 +167,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.21.2/dist/bootstrap-table.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/he/1.2.0/he.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.4.0/clipboard.min.js"></script>
 
   <!-- Your JS remains unchanged, assuming it's already working -->
   <!-- Keep your existing <script> logic block here, unchanged -->
@@ -372,12 +373,43 @@
 
           new bootstrap.Tab(document.querySelector('#answer-tab')).show();
 
+          const resultText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
+          const renderedHtml = marked.parse(resultText); // No need to decode the entire text
+
+          const enhancedHtml = renderedHtml.replace(
+            /<pre><code( class="[^"]*")?>([\s\S]*?)<\/code><\/pre>/g,
+            (match, langClass, codeContent) => {
+              const id = `code-${Math.random().toString(36).substring(2, 9)}`;
+              const decodedCode = he.decode(codeContent);
+              return `
+      <div class="position-relative border rounded mb-3 bg-light">
+        <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 m-2 copy-btn" data-target="${id}">Copy</button>
+        <pre id="${id}" class="m-0 p-3 bg-light rounded overflow-auto" style="white-space: pre;"><code${langClass ? ` ${langClass}` : ''}>${decodedCode}</code></pre>
+      </div>
+    `;
+            }
+          );
+
           $('#answerFrame').html(`
-  <div class="mb-2 text-end text-muted small">
-    ⏱️ Time taken: ${duration} seconds
-  </div>
-  <div class="p-3 border rounded bg-light text-dark" style="overflow-x: auto; white-space: pre-wrap; font-family: monospace;">${he.encode(result)}</div>
+  <div class="mb-2 text-end text-muted small">⏱️ Time taken: ${duration} seconds</div>
+  ${enhancedHtml}
 `);
+
+          // Use modern clipboard API
+          setTimeout(() => {
+            $('.copy-btn').on('click', function () {
+              const targetId = $(this).data('target');
+              const textToCopy = document.getElementById(targetId)?.innerText;
+              if (!textToCopy) return alert("Nothing to copy!");
+
+              navigator.clipboard.writeText(textToCopy)
+                .then(() => alert("Copied!"))
+                .catch(err => alert("Clipboard API failed: " + err));
+            });
+          }, 0);
+
+
+
         } catch (err) {
           new bootstrap.Tab(document.querySelector('#answer-tab')).show();
           $('#answerFrame').text(typeof err === 'string' ? `Error: ${err}` : 'Failed to process the request.');
