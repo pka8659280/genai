@@ -374,17 +374,16 @@
           new bootstrap.Tab(document.querySelector('#answer-tab')).show();
 
           const resultText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
-          const renderedHtml = marked.parse(resultText); // No need to decode the entire text
+          const renderedHtml = marked.parse(resultText);
 
           const enhancedHtml = renderedHtml.replace(
             /<pre><code( class="[^"]*")?>([\s\S]*?)<\/code><\/pre>/g,
             (match, langClass, codeContent) => {
               const id = `code-${Math.random().toString(36).substring(2, 9)}`;
-              const decodedCode = he.decode(codeContent);
               return `
       <div class="position-relative border rounded mb-3 bg-light">
         <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 m-2 copy-btn" data-target="${id}">Copy</button>
-        <pre id="${id}" class="m-0 p-3 bg-light rounded overflow-auto" style="white-space: pre;"><code${langClass ? ` ${langClass}` : ''}>${decodedCode}</code></pre>
+        <pre id="${id}" class="m-0 p-3 bg-light rounded overflow-auto" style="white-space: pre;"><code${langClass || ''}>${codeContent}</code></pre>
       </div>
     `;
             }
@@ -395,7 +394,6 @@
   ${enhancedHtml}
 `);
 
-          // Use modern clipboard API
           setTimeout(() => {
             $('.copy-btn').on('click', function () {
               const targetId = $(this).data('target');
@@ -407,6 +405,8 @@
                 .catch(err => alert("Clipboard API failed: " + err));
             });
           }, 0);
+
+
 
 
 
