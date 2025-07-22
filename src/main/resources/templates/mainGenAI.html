@@ -247,34 +247,51 @@
     const loadKnowledgeByGroupType = groupTypeId =>
       $.ajax({ url: `/api/knowledge/groupType/${groupTypeId}`, method: 'GET' });
 
-    // Poll job status until completed or failed
-    const pollJobStatus = (jobUid, interval = 5000, maxAttempts = 500) => {
+    // Poll job status and update button based on real status
+    const pollJobStatus = (jobUid, interval = 2000, maxAttempts = 300) => {
       let attempts = 0;
+      const $generateBtn = $('#groupTypeForm button[type="submit"]');
+
       return new Promise((resolve, reject) => {
-        const timer = setInterval(() => {
+        const poll = async () => {
           attempts++;
-          $.ajax({
-            url: `http://127.0.0.1:8081/jobs/${jobUid}`,
-            method: 'GET',
-            dataType: 'json',
-          })
-            .done(response => {
-              if (response.status === 'COMPLETED') {
-                clearInterval(timer);
-                resolve(response);
-              } else if (response.status === 'FAILED') {
-                clearInterval(timer);
-                reject('Job failed to complete.');
-              } else if (attempts >= maxAttempts) {
-                clearInterval(timer);
-                reject('Polling timed out.');
-              }
-            })
-            .fail(() => {
-              clearInterval(timer);
-              reject('Failed to fetch job status.');
+
+          try {
+            const response = await $.ajax({
+              url: `http://127.0.0.1:8081/jobs/${jobUid}`,
+              method: 'GET',
+              dataType: 'json'
             });
-        }, interval);
+
+            // ✅ ONLY update if it's now GENERATING
+            if (response.status === 'RUNNING') {
+              $generateBtn.text('Generating...');
+            }
+
+            // Resolve when complete
+            if (response.status === 'COMPLETED') {
+              clearInterval(timer);
+              resolve(response);
+            } else if (response.status === 'FAILED') {
+              clearInterval(timer);
+              reject(`Job failed: ${response.error || 'Unknown error'}`);
+            } else if (attempts >= maxAttempts) {
+              clearInterval(timer);
+              reject('Polling timed out.');
+            }
+          } catch (err) {
+            clearInterval(timer);
+            reject(`Request failed: ${err.statusText || 'Network error'}`);
+          }
+        };
+
+        // ✅ Run immediately to catch fast transitions
+        poll();
+
+        // ✅ Then continue polling
+        const timer = setInterval(poll, interval);
+
+        $(window).on('beforeunload', () => clearInterval(timer));
       });
     };
 
@@ -322,7 +339,7 @@
         e.preventDefault();
 
         const $generateBtn = $('#groupTypeForm button[type="submit"]');
-        $generateBtn.prop('disabled', true).text('Generating...');
+        $generateBtn.prop('disabled', true).text('On Queue...');
 
         const selectedId = $('#groupTypeSelect').val();
         if (!selectedId) {
@@ -357,6 +374,7 @@
 
           $('#jsonPayloadDisplay').text(JSON.stringify(jsonPayload, null, 2));
           $('#answerFrame').html('<em>Waiting for result...</em>');
+          $generateBtn.prop('disabled', true).text('On Queue...');
 
           // Submit job to API
           await $.ajax({
@@ -376,39 +394,57 @@
           const resultText = typeof result === 'string' ? result : JSON.stringify(result, null, 2);
           const renderedHtml = marked.parse(resultText);
 
+          // Enhance all <pre><code> blocks with unique IDs, copy buttons, and hover effect
           const enhancedHtml = renderedHtml.replace(
-            /<pre><code( class="[^"]*")?>([\s\S]*?)<\/code><\/pre>/g,
-            (match, langClass, codeContent) => {
+            /<pre><code( class="([^"]*)")?>([\s\S]*?)<\/code><\/pre>/g,
+            (match, langClassAttr, langName, codeContent) => {
               const id = `code-${Math.random().toString(36).substring(2, 9)}`;
+              const languageLabel = langName ? langName.toUpperCase() : 'CODE';
+
               return `
-      <div class="position-relative border rounded mb-3 bg-light">
-        <button class="btn btn-sm btn-secondary position-absolute top-0 end-0 m-2 copy-btn" data-target="${id}">Copy</button>
-        <pre id="${id}" class="m-0 p-3 bg-light rounded overflow-auto" style="white-space: pre;"><code${langClass || ''}>${codeContent}</code></pre>
-      </div>
-    `;
+      <div class="border rounded mb-3 bg-light">
+        <!-- Header: Language + Copy Button -->
+        <div class="d-flex justify-content-between align-items-center bg-dark text-white px-3 py-1 small rounded-top">
+          <span>${languageLabel}</span>
+          <button class="btn btn-sm btn-outline-light copy-btn" data-target="${id}">📋 Copy</button>
+        </div>
+        <!-- Code Content -->
+        <pre id="${id}" class="m-0 p-3 rounded-bottom bg-white border-0"
+             style="white-space: pre-wrap; word-wrap: break-word; max-height: 500px; overflow: auto; 
+                    font-family: monospace; font-size: 0.9em;"><code${langClassAttr || ''}>${he.encode(he.decode(codeContent))}</code>
+        </pre>
+      </div>`;
             }
           );
 
+          // Final output with interactive enhancements
           $('#answerFrame').html(`
   <div class="mb-2 text-end text-muted small">⏱️ Time taken: ${duration} seconds</div>
-  ${enhancedHtml}
+  <div style="overflow-x: auto; white-space: pre-wrap; line-height: 1.5;">${enhancedHtml}</div>
 `);
 
+          // Set up interactive copy buttons with visual feedback
           setTimeout(() => {
-            $('.copy-btn').on('click', function () {
+            $('.copy-btn').off('click').on('click', function () {
               const targetId = $(this).data('target');
-              const textToCopy = document.getElementById(targetId)?.innerText;
-              if (!textToCopy) return alert("Nothing to copy!");
+              const el = document.getElementById(targetId);
+              if (!el) return;
+
+              const textToCopy = el.innerText;
 
               navigator.clipboard.writeText(textToCopy)
-                .then(() => alert("Copied!"))
-                .catch(err => alert("Clipboard API failed: " + err));
+                .then(() => {
+                  const $btn = $(this);
+                  const originalHTML = $btn.html();
+                  $btn.html('✅ Copied!');
+                  setTimeout(() => $btn.html(originalHTML), 2000);
+                })
+                .catch(err => {
+                  console.error('Copy failed:', err);
+                  alert('Your browser does not support clipboard access. Please enable permissions or use a supported browser.');
+                });
             });
           }, 0);
-
-
-
-
 
         } catch (err) {
           new bootstrap.Tab(document.querySelector('#answer-tab')).show();
